@@ -4,6 +4,13 @@
 # object files
 *.o
 *.zip
+*.txt
+*.csv
+
+# Python
+venv/
+__pycache__/
+.pytest_cache/
 
 # Test results files
 results/

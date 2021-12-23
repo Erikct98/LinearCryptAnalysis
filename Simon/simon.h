@@ -14,7 +14,7 @@ uint16_t cyrish(uint16_t word, uint8_t ticks)
 uint16_t *generateSubKeys(uint64_t key, uint16_t *subkeys, uint8_t rounds)
 {
     // Break key in parts
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < std::min((uint8_t) 4, rounds); i++)
     {
         subkeys[i] = (key >> (i << 4)) & 0xFFFF;
     }

@@ -1,0 +1,9 @@
+# Editor files
+.vscode
+
+# object files
+*.o
+*.zip
+
+# Test results files
+results/

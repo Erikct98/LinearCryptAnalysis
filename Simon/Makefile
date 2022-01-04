@@ -17,7 +17,7 @@ trailtest:
 	${CC} trail_test.cpp encrypt_v3.cpp -o ${OBJTRAILTEST} ${CFLAGS}
 
 matsui2:
-	${CC} matsui2_attack.cpp encrypt_v3.cpp -o ${OBJMATSUI} ${CFLAGS}
+	${CC} matsui2.cpp encrypt_v3.cpp -o ${OBJMATSUI} ${CFLAGS}
 
 decrypttest:
 	${CC} test_decrypt.cpp encrypt_v3.cpp -o ${OBJDECRYPT} ${CFLAGS}

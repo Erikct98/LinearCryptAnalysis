@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <random>
 
 uint8_t Z[] = {1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0,
                0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1,
@@ -42,19 +43,7 @@ uint32_t getParity(uint32_t v)
     return (0x6996 >> v) & 1;
 }
 
-uint64_t getRandomKey()
-{
-    uint64_t key = rand();
-    key = key << 31 ^ rand();
-    key = key << 31 ^ rand();
-    return key;
-}
-
-uint32_t getRandomPt()
-{
-    return (rand() << 31) ^ rand();
-}
-
+// Filename
 std::string generateFileName(std::string name, uint32_t inp_mask, uint32_t out_mask, uint32_t sample_size, uint32_t nr_trials, uint8_t enc_rounds)
 {
     // Construct file names from details
@@ -69,4 +58,19 @@ std::string generateFileName(std::string name, uint32_t inp_mask, uint32_t out_m
                             .append("_" + std::to_string(unix_time))
                             .append(".txt");
     return fname;
+}
+
+// Randomization
+std::mt19937 mt(time(0));
+std::uniform_int_distribution<uint32_t> randuint32(0, 0xFFFFFFFF);
+std::uniform_int_distribution<uint64_t> randuint64(0, 0xFFFFFFFFFFFFFFFF);
+
+uint32_t random_uint32()
+{
+    return randuint32(mt);
+}
+
+uint64_t random_uint64()
+{
+    return randuint64(mt);
 }

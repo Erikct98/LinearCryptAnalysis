@@ -1,10 +1,14 @@
 CC     = g++
 CFLAGS = -O3
 
-OBJAESESQUE 	   = aesesque.o
+OBJVALIDATE		= validate.o
+OBJTRAIL   		= trail.o
 
-aesesque:
-	${CC} trailTest.cpp aesesque.cpp -o ${OBJAESESQUE} ${CFLAGS}
+validate:
+	${CC} validate.cpp AESesque.cpp -o ${OBJVALIDATE} ${CFLAGS}
+
+trail:
+	${CC} trail.cpp AESesque.cpp -o ${OBJTRAIL} ${CFLAGS}
 
 clean:
-	rm -f ${OBJAESESQUE}
+	rm -f ${OBJVALIDATE} ${OBJTRAIL}

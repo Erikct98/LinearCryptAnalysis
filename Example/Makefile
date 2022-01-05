@@ -1,5 +1,5 @@
 CC     = g++
-CFLAGS = -O3
+CFLAGS = -Os
 
 OBJVALIDATE		= validate.o
 OBJTRAIL   		= trail.o

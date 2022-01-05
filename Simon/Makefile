@@ -1,5 +1,5 @@
 CC     = g++
-CFLAGS = -O3
+CFLAGS = -Os
 
 OBJSPEEDSIMONV1	   = speedtest_v1.o
 OBJSPEEDSIMONV2	   = speedtest_v2.o

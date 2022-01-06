@@ -1,18 +1,29 @@
 CC     = g++
 CFLAGS = -O3
 
+OBJAESESQUE		= aesesque.o
 OBJSPEED		= speedtest.o
 OBJVALIDATE		= validate.o
 OBJTRAIL   		= trail.o
 
-validate:
-	${CC} validate.cpp AESesque.cpp -o ${OBJVALIDATE} ${CFLAGS}
+EXEVALIDATE		= validate.exe
+EXESPEED		= speedtest.exe
+EXETRAIL		= trail.exe
 
-speedtest:
-	${CC} speedtest.cpp AESesque.cpp -o ${OBJSPEED} ${CFLAGS}
+_aes:
+	${CC} -c -o ${OBJAESESQUE} AESesque.cpp ${CFLAGS}
 
-trail:
-	${CC} trail.cpp AESesque.cpp -o ${OBJTRAIL} ${CFLAGS}
+validate: _aes
+	${CC} -c -o ${OBJVALIDATE} validate.cpp ${CFLAGS}
+	${CC} -o ${EXEVALIDATE} ${OBJAESESQUE} ${OBJVALIDATE} ${CFLAGS}
+
+speedtest: _aes
+	${CC} -c -o ${OBJSPEED} speedtest.cpp ${CFLAGS}
+	${CC} -o ${EXESPEED} ${OBJAESESQUE} ${OBJSPEED} ${CFLAGS}
+
+trail: _aes
+	${CC} -c -o ${OBJTRAIL} trail.cpp ${CFLAGS}
+	${CC} -o ${EXETRAIL} ${OBJAESESQUE} ${OBJSPEED} ${CFLAGS}
 
 clean:
-	rm -f ${OBJVALIDATE} ${OBJTRAIL}
+	rm -f ${OBJAESESQUE} ${OBJSPEED} ${OBJVALIDATE} ${OBJTRAIL} ${EXEVALIDATE} ${EXESPEED} ${EXETRAIL}

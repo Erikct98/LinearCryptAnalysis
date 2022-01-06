@@ -2,17 +2,17 @@
 #include "AESesque.h"
 
 // CYclic LEft SHift 32-bit word
-#define cylesh32_4(word)  ((word <<  4) ^ (word >> 28))
-#define cylesh32_8(word)  ((word <<  8) ^ (word >> 24))
-#define cylesh32_12(word) ((word << 12) ^ (word >> 20))
+#define cylesh32_4(word)  (word <<  4 ^ word >> 28)
+#define cylesh32_8(word)  (word <<  8 ^ word >> 24)
+#define cylesh32_12(word) (word << 12 ^ word >> 20)
 
 // CYclic LEft SHift all 4-bit SEctions in 32-bit word.
-#define secylesh32_1(word) (((word & 0x77777777) << 1) ^ ((word & 0x88888888) >> 3))
-#define secylesh32_2(word) (((word & 0x33333333) << 2) ^ ((word & 0xCCCCCCCC) >> 2))
+#define secylesh32_1(word) ((word & 0x77777777) << 1 ^ (word & 0x88888888) >> 3)
+#define secylesh32_2(word) ((word & 0x33333333) << 2 ^ (word & 0xCCCCCCCC) >> 2)
 
 static const uint8_t S[] = {8, 2, 4, 0, 15, 5, 7, 12, 10, 6, 11, 3, 14, 13, 9, 1};
 
-void SubBytes(uint32_t *word)
+inline void SubBytes(uint32_t *word)
 {
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -26,14 +26,14 @@ void SubBytes(uint32_t *word)
     }
 }
 
-void ShiftRows(uint32_t *word)
+inline void ShiftRows(uint32_t *word)
 {
     word[1] = cylesh32_4(word[1]);
     word[2] = cylesh32_8(word[2]);
     word[3] = cylesh32_12(word[3]);
 }
 
-void MixColumns(uint32_t *word)
+inline void MixColumns(uint32_t *word)
 {
     uint32_t temp[4];
     uint32_t val1, val2;
@@ -51,7 +51,7 @@ void MixColumns(uint32_t *word)
     }
 }
 
-void Add(uint32_t *word, uint32_t *value)
+inline void Add(uint32_t *word, uint32_t *value)
 {
     for (uint8_t i = 0; i < 4; i++)
     {

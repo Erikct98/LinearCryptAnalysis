@@ -32,7 +32,7 @@ int main()
     bool correct = true;
     for (uint8_t i = 0; i < 4; i++)
     {
-        correct &= word[0] == output[0];
+        correct &= word[i] == output[i];
     }
 
     // Output result for verification

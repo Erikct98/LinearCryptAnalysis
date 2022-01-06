@@ -23,7 +23,7 @@ speedtest: _aes
 
 trail: _aes
 	${CC} -c -o ${OBJTRAIL} trail.cpp ${CFLAGS}
-	${CC} -o ${EXETRAIL} ${OBJAESESQUE} ${OBJSPEED} ${CFLAGS}
+	${CC} -o ${EXETRAIL} ${OBJAESESQUE} ${OBJTRAIL} ${CFLAGS}
 
 clean:
 	rm -f ${OBJAESESQUE} ${OBJSPEED} ${OBJVALIDATE} ${OBJTRAIL} ${EXEVALIDATE} ${EXESPEED} ${EXETRAIL}

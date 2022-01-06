@@ -7,11 +7,13 @@ OBJSPEED			= speedtest.o
 OBJTRAIL			= trailtest.o
 OBJMATSUI		    = matsui2.o
 OBJDECRYPT		    = test_decrypt.o
+OBJPTGEN			= plaintextgen.o
 
 EXESPEED			= speedtest.exe
 EXETRAIL			= trailtest.exe
 EXEMATSUI			= matsui2.exe
 EXEDECRYPT			= decrypt.exe
+EXEPTGEN			= plaintextgen.exe
 
 _simon:
 	${CC} -c -o ${OBJSIMON} simon.cpp ${CFLAGS}
@@ -35,6 +37,9 @@ decrypt: _simon _toolbox
 	${CC} -c -o ${OBJDECRYPT} test_decrypt.cpp ${CFLAGS}
 	${CC} -o ${EXEDECRYPT} ${OBJDECRYPT} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
 
+plaintextgen: _simon _toolbox
+	${CC} -c -o ${OBJPTGEN} plaintextgen.cpp ${CFLAGS}
+	${CC} -o ${EXEPTGEN} ${OBJPTGEN} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
 
 clean:
 	rm -f ${OBJSIMON} ${TOOLBOX} ${OBJSPEED} ${OBJTRAIL} ${OBJMATSUI} ${OBJDECRYPT} ${EXESPEED} ${EXETRAIL} ${EXEMATSUI} ${EXEDECRYPT}

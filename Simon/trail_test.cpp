@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "simon.h"
-#include "encrypt.h"
+#include "toolbox.h"
 
 void compute_correlation(uint32_t inp_mask, uint32_t out_mask, uint32_t sample_size, uint32_t nr_trials, uint8_t enc_rounds, uint32_t *results)
 {
@@ -14,13 +14,13 @@ void compute_correlation(uint32_t inp_mask, uint32_t out_mask, uint32_t sample_s
     for (int i = 0; i < nr_trials; i++)
     {
         // Generate subkeys
-        key = getRandomKey();
+        key = rand_uint64();
         generateSubKeys(key, subkeys, enc_rounds);
 
         // Compute correlation
         for (int j = 0; j < sample_size; j++)
         {
-            pt = getRandomPt();
+            pt = rand_uint32();
             ct = encrypt(pt, subkeys, enc_rounds);
             results[i] += getParity((inp_mask & pt) ^ (out_mask & ct));
         }

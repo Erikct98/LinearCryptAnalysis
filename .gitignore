@@ -6,6 +6,7 @@
 *.zip
 *.txt
 *.csv
+*.exe
 
 # Python
 venv/

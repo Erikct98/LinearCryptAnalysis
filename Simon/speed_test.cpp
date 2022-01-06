@@ -2,7 +2,7 @@
 #include <chrono>
 #include <cstdlib>
 #include "simon.h"
-#include "encrypt.h"
+#include "toolbox.h"
 
 void speedtest()
 {
@@ -27,7 +27,6 @@ void speedtest()
 
     // Print results to console
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    print_name();
     std::cout << "checksum: " << checksum << '\n';
     std::cout << "duration (mus): " << duration.count() << '\n'
               << '\n';

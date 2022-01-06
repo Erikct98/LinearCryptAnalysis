@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "simon.h"
-#include "encrypt.h"
+#include "toolbox.h"
 
 int main()
 {
@@ -17,7 +17,7 @@ int main()
     uint32_t exp_ct = 0xc69be9bb;
 
     uint32_t ct = encrypt(pt, subkeys, rounds);
-    std::cout << exp_ct - ct<< '\n';
+    std::cout << exp_ct - ct << '\n';
 
     uint32_t dt = decrypt(ct, subkeys, rounds);
     std::cout << dt - pt << '\n';

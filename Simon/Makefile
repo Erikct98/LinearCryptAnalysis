@@ -1,26 +1,40 @@
 CC     = g++
-CFLAGS = -Os
+CFLAGS = -O3
 
-OBJSPEEDSIMONV1	   = speedtest_v1.o
-OBJSPEEDSIMONV2	   = speedtest_v2.o
-OBJSPEEDSIMONV3	   = speedtest_v3.o
-OBJTRAILTEST	   = trailTest.o
-OBJMATSUI		   = matsui2.o
-OBJDECRYPT		   = test_decrypt.o
+OBJSIMON			= simon.o
+OBJTOOLBOX			= toolbox.o
+OBJSPEED			= speedtest.o
+OBJTRAIL			= trailtest.o
+OBJMATSUI		    = matsui2.o
+OBJDECRYPT		    = test_decrypt.o
 
-speedtest:
-	${CC} speed_test.cpp encrypt_v1.cpp -o ${OBJSPEEDSIMONV1} ${CFLAGS}
-	${CC} speed_test.cpp encrypt_v2.cpp -o ${OBJSPEEDSIMONV2} ${CFLAGS}
-	${CC} speed_test.cpp encrypt_v3.cpp -o ${OBJSPEEDSIMONV3} ${CFLAGS}
+EXESPEED			= speedtest.exe
+EXETRAIL			= trailtest.exe
+EXEMATSUI			= matsui2.exe
+EXEDECRYPT			= decrypt.exe
 
-trailtest:
-	${CC} trail_test.cpp encrypt_v3.cpp -o ${OBJTRAILTEST} ${CFLAGS}
+_simon:
+	${CC} -c -o ${OBJSIMON} simon.cpp ${CFLAGS}
 
-matsui2:
-	${CC} matsui2.cpp encrypt_v3.cpp -o ${OBJMATSUI} ${CFLAGS}
+_toolbox:
+	${CC} -c -o ${OBJTOOLBOX} toolbox.cpp ${CFLAGS}
 
-decrypttest:
-	${CC} test_decrypt.cpp encrypt_v3.cpp -o ${OBJDECRYPT} ${CFLAGS}
+speedtest: _simon _toolbox
+	${CC} -c -o ${OBJSPEED} speed_test.cpp ${CFLAGS}
+	${CC} -o ${EXESPEED} ${OBJSPEED} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
+trailtest: _simon _toolbox
+	${CC} -c -o ${OBJTRAIL} trail_test.cpp ${CFLAGS}
+	${CC} -o ${EXETRAIL} ${OBJTRAIL} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
+matsui2: _simon _toolbox
+	${CC} -c -o ${OBJMATSUI} matsui2.cpp ${CFLAGS}
+	${CC} -o ${EXEMATSUI} ${OBJMATSUI} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
+decrypt: _simon _toolbox
+	${CC} -c -o ${OBJDECRYPT} test_decrypt.cpp ${CFLAGS}
+	${CC} -o ${EXEDECRYPT} ${OBJDECRYPT} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
 
 clean:
-	rm -f ${OBJSIMONV1} ${OBJSIMONV2} ${OBJSIMONV3} ${OBJTRAILTEST} ${OBJMATSUI} ${OBJDECRYPT}
+	rm -f ${OBJSIMON} ${TOOLBOX} ${OBJSPEED} ${OBJTRAIL} ${OBJMATSUI} ${OBJDECRYPT} ${EXESPEED} ${EXETRAIL} ${EXEMATSUI} ${EXEDECRYPT}

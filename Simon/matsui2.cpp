@@ -1,10 +1,9 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <algorithm>
-#include <cstdlib>
 #include <fstream>
 #include "simon.h"
-#include "encrypt.h"
+#include "toolbox.h"
 
 // 5-round approximation SIMON32, used together with 7 encryption to achieve key.
 uint32_t computeNonLinearParity(uint32_t ct, uint16_t key)
@@ -33,7 +32,7 @@ void attack(uint32_t rounds, uint32_t sample_size, uint64_t key)
     uint32_t pt, ct, linear_parity;
     for (uint32_t i = 0; i < sample_size; i++)
     {
-        pt = random_uint32();
+        pt = rand_uint32();
         ct = encrypt(pt, subkeys, rounds);
         linear_parity = getParity(pt & ipm ^ ct & opm);
 
@@ -68,13 +67,13 @@ void attack(uint32_t rounds, uint32_t sample_size, uint64_t key)
 int main()
 {
     // Settings
-    const uint32_t nr_iterations = 0x40;
+    const uint32_t nr_iterations = 0x4000;
     const uint32_t rounds = 7;
     const uint32_t sample_size = 0x4000;
 
     for (uint16_t i = 0; i < nr_iterations; i++)
     {
-        attack(rounds, sample_size, random_uint64());
+        attack(rounds, sample_size, rand_uint64());
     }
 
     return 0;

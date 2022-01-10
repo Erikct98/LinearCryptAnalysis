@@ -8,12 +8,14 @@ OBJTRAIL			= trailtest.o
 OBJMATSUI		    = matsui2.o
 OBJDECRYPT		    = test_decrypt.o
 OBJPTGEN			= plaintextgen.o
+OBJLINEARIZE		= linearize.o
 
 EXESPEED			= speedtest.exe
 EXETRAIL			= trailtest.exe
 EXEMATSUI			= matsui2.exe
 EXEDECRYPT			= decrypt.exe
 EXEPTGEN			= plaintextgen.exe
+EXELINEARIZE 		= linearize.exe
 
 _simon:
 	${CC} -c -o ${OBJSIMON} simon.cpp ${CFLAGS}
@@ -41,5 +43,11 @@ plaintextgen: _simon _toolbox
 	${CC} -c -o ${OBJPTGEN} plaintextgen.cpp ${CFLAGS}
 	${CC} -o ${EXEPTGEN} ${OBJPTGEN} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
 
+linearize: _simon _toolbox
+	${CC} -c -o ${OBJLINEARIZE} linearization.cpp ${CFLAGS}
+	${CC} -o ${EXELINEARIZE} ${OBJLINEARIZE} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
 clean:
-	rm -f ${OBJSIMON} ${TOOLBOX} ${OBJSPEED} ${OBJTRAIL} ${OBJMATSUI} ${OBJDECRYPT} ${EXESPEED} ${EXETRAIL} ${EXEMATSUI} ${EXEDECRYPT}
+	rm -f ${OBJSIMON} ${OBJTOOLBOX} ${OBJSPEED} ${OBJTRAIL} ${OBJMATSUI} ${OBJDECRYPT}\
+	${OBJPTGEN}	${OBJLINEARIZE} ${EXESPEED} ${EXETRAIL} ${EXEMATSUI} ${EXEDECRYPT}\
+	${EXEPTGEN} ${EXELINEARIZE}

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <algorithm>
 
 // CYclic RIght SHift
 #define cyrish_1(word) (word >> 1 ^ word << 15)
@@ -15,7 +16,7 @@ static const uint8_t Z[] = {
 void generateSubKeys(uint64_t key, uint16_t *subkeys, uint8_t rounds)
 {
     // Break key in parts
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < std::min(rounds, (uint8_t) 0x4); i++)
     {
         subkeys[i] = (key >> (i << 4)) & 0xFFFF;
     }

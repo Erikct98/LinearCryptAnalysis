@@ -6,7 +6,7 @@
 
 static uint32_t ct;
 static const uint64_t KEY = 0x48378AF8BB87914A;
-static const uint32_t NR_ITERATIONS = 0x400;
+static const uint32_t NR_ITERATIONS = 0x4;
 
 // #define AND(a, b) 0.5 * ((-1)^0 + (-1)^a + (-1)^b + (-1)^(a+b))
 #define AND(a, b) ~((~(a << 1) + ~(b << 1) + ((a ^ b) << 1)) >> 2)
@@ -189,6 +189,103 @@ uint32_t linearizeParity2()
     return count;
 }
 
+uint32_t linearizeParity3()
+{
+    const uint8_t rounds = 3;
+    const uint32_t ipm = 0x40040001;
+    // const uint32_t opm = 0x00040000;
+
+    // Compute key
+    uint16_t subkeys[rounds];
+    generateSubKeys(KEY, subkeys, rounds);
+
+    uint32_t count = 0;
+    uint32_t pt, in_parity;
+    uint16_t xl, xr;
+    uint16_t k1 = subkeys[0], k2 = subkeys[1], k3 = subkeys[2];
+
+    uint32_t cts[rounds];
+    for (uint32_t i = 0; i < NR_ITERATIONS; i++)
+    {
+        std::cout << "======== " << i << " ========" << std::endl;
+
+        pt = rand_uint32();
+
+        // Encryption
+        in_parity = getParity(pt & ipm);
+
+        // Linear approximation
+        for (uint i = 0; i < rounds; i++){
+            cts[i] = encrypt(pt, subkeys, i + 1);
+        }
+
+        xl = cts[2] >> 16;
+        xr = cts[2] & 0xFFFF;
+
+        uint16_t X2R0 =  F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ L(
+              (I(0)
+            + I(F(xr, 15))
+            + I(F(xr,  8))
+            - I(F(xr, 15) ^ F(xr,  8))
+        ) >> 1);
+        uint16_t X2R1 =  F(xl,  1) ^ F(k3,  1) ^ F(xr, 15) ^ L(
+              (I(0)
+            + I(F(xr,  0))
+            + I(F(xr,  9))
+            - I(F(xr,  0) ^ F(xr,  9))
+        ) >> 1);
+        uint16_t X2R6 =  F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ L(
+              (I(0)
+            + I(F(xr,  5))
+            + I(F(xr, 14))
+            - I(F(xr,  5) ^ F(xr, 14))
+        ) >> 1);
+        uint16_t X2R7 =  F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ L(
+              (I(0)
+            + I(F(xr,  6))
+            + I(F(xr, 15))
+            - I(F(xr,  6) ^ F(xr, 15))
+        ) >> 1);
+        uint16_t X2R10 = F(xl, 10) ^ F(k3, 10) ^ F(xr,  8) ^ L(
+              (I(0)
+            + I(F(xr,  9))
+            + I(F(xr,  2))
+            - I(F(xr,  9) ^ F(xr,  2))
+        ) >> 1);
+        uint16_t X2R13 = F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ L(
+              (I(0)
+            + I(F(xr, 12))
+            + I(F(xr,  5))
+            - I(F(xr, 12) ^ F(xr,  5))
+        ) >> 1);
+        uint16_t X2R14 = F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ L(
+              (I(0)
+            + I(F(xr, 13))
+            + I(F(xr,  6))
+            - I(F(xr, 13) ^ F(xr,  6))
+        ) >> 1);
+
+        uint16_t X2R1xX2R10 = X2R1 & X2R10;
+        uint16_t X2R14xX2R7 = X2R14 & X2R7;
+        uint16_t X2R7xX2R0 = X2R7 & X2R0;
+        uint16_t X1R8 = F(xr, 8) ^ F(k2, 8) ^ X2R6 ^ X2R7xX2R0;
+        uint16_t X1R15 = F(xr, 15) ^ F(k2, 15) ^ X2R13 ^ X2R14xX2R7;
+        uint16_t X1R8xX1R15 = X1R8 & X1R15;
+        uint16_t out_parity = F(xr, 2) ^ F(k2, 2) ^ F(k1, 0) ^ X2R1xX2R10 ^ X1R8xX1R15;
+        std::cout << "X1R8:  " << X1R8 << std::endl;
+        std::cout << "X1R15: " << X1R15 << std::endl;
+        std::cout << "X2R1  x X2R10: " << X2R1xX2R10 << std::endl;
+        std::cout << "X2R14 x X2R7: " << X2R14xX2R7 << std::endl;
+        std::cout << "X2R7  x X2R0: " << X2R7xX2R0 << std::endl;
+        std::cout << "X1R8  x X1R15: " << X1R8xX1R15 << std::endl;
+        std::cout << "out_parity: " << out_parity << ", actual: " << in_parity << std::endl;
+
+        count += in_parity ^ out_parity;
+    }
+    return count;
+}
+
+
 void test()
 {
     uint8_t a, b;
@@ -202,7 +299,7 @@ void test()
 
 int main()
 {
-    uint32_t count = linearizeParity2();
+    uint32_t count = linearizeParity3();
     if (count)
     {
         std::cout << "INCORRECT: " << count << std::endl;

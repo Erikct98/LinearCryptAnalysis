@@ -59,15 +59,7 @@ uint32_t linearizeParity1()
         // Linear approximation
         ct = encrypt(pt, subkeys, rounds);
         out_parity = getParity(ct & opm);
-        X1R1xX1R10 = L((
-            (I(0) << 1)
-            + I(F(ct, 1))
-            + I(F(ct, 10))
-            - I(F(ct, 1) ^ F(ct, 10))
-        ) >> 1);
         A = 1 + EXP1(ct, 1) + EXP1(ct, 10) - EXP2(ct, 1, 10);
-
-
         B = EXP1(ct, 6) + EXP2(ct, 1, 6) + EXP2(ct, 6, 10) - EXP3(ct, 1, 6, 10);
         C = EXP1(ct, 13) + EXP2(ct, 1, 13) + EXP2(ct, 10, 13) - EXP3(ct, 1, 10, 13);
         D = -EXP2(ct, 6, 13) - EXP3(ct, 1, 6, 13) - EXP3(ct, 6, 10, 13) + EXP4(ct, 1, 6, 10, 13);
@@ -204,82 +196,17 @@ uint32_t linearizeParity3()
     uint16_t xl, xr;
     uint16_t k1 = subkeys[0], k2 = subkeys[1], k3 = subkeys[2];
 
-    uint32_t cts[rounds];
     for (uint32_t i = 0; i < NR_ITERATIONS; i++)
     {
-        std::cout << "======== " << i << " ========" << std::endl;
-
         pt = rand_uint32();
 
         // Encryption
         in_parity = getParity(pt & ipm);
 
         // Linear approximation
-        for (uint i = 0; i < rounds; i++){
-            cts[i] = encrypt(pt, subkeys, i + 1);
-        }
-
-        xl = cts[2] >> 16;
-        xr = cts[2] & 0xFFFF;
-
-        uint16_t X2R0 =  L((
-              I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14))
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr, 15))
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr,  8))
-            - I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr, 15) ^ F(xr,  8))
-        ) >> 1);
-        uint16_t X2R1 =  L((
-              I(F(xl,  1) ^ F(k3,  1) ^ F(xr, 15))
-            + I(F(xl,  1) ^ F(k3,  1) ^ F(xr, 15) ^ F(xr,  0))
-            + I(F(xl,  1) ^ F(k3,  1) ^ F(xr, 15) ^ F(xr,  9))
-            - I(F(xl,  1) ^ F(k3,  1) ^ F(xr, 15) ^ F(xr,  0) ^ F(xr,  9))
-        ) >> 1);
-        uint16_t X2R6 =  L((
-              I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4))
-            + I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  5))
-            + I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr, 14))
-            - I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  5) ^ F(xr, 14))
-        ) >> 1);
-        uint16_t X2R7 =  L((
-              I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
-            - I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
-        ) >> 1);
-        uint16_t X2R10 = L((
-              I(F(xl, 10) ^ F(k3, 10) ^ F(xr,  8))
-            + I(F(xl, 10) ^ F(k3, 10) ^ F(xr,  8) ^ F(xr,  9))
-            + I(F(xl, 10) ^ F(k3, 10) ^ F(xr,  8) ^ F(xr,  2))
-            - I(F(xl, 10) ^ F(k3, 10) ^ F(xr,  8) ^ F(xr,  9) ^ F(xr,  2))
-        ) >> 1);
-        uint16_t X2R13 = L((
-              I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11))
-            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12))
-            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5))
-            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5))
-        ) >> 1);
-        uint16_t X2R14 = L((
-              I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
-            - I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
-        ) >> 1);
-
-        uint16_t X2R7xX2R0 =  L((
-              (I(0) << 1)
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14))
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr, 15))
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr,  8))
-            - I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr, 15) ^ F(xr,  8))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
-            - I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
-            - I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
-            - I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
-            - I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  8) ^ F(xr,  6))
-            + I(F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15) ^ F(xr,  8) ^ F(xr,  6))
-        ) >> 2);
+        ct = encrypt(pt, subkeys, rounds);
+        xl = ct >> 16;
+        xr = ct & 0xFFFF;
 
         uint16_t X2R1xX2R10 =  L((
               (I(0) << 1)
@@ -297,23 +224,7 @@ uint32_t linearizeParity3()
             + I(F(xl,  1) ^ F(k3,  1) ^ F(xr, 15) ^ F(xl, 10) ^ F(k3, 10) ^ F(xr,  8) ^ F(xr,  0) ^ F(xr,  9) ^ F(xr,  2))
         ) >> 2);
 
-        uint16_t X2R14xX2R7 = L((
-              (I(0) << 1)
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
-            - I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
-            + I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
-            - I(F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
-            - I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
-            - I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr, 15))
-            - I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
-            + I(F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr,  6) ^ F(xr, 15))
-        ) >> 2);
-
-        uint16_t X1R8 =  L((
+        uint16_t X1R8 = L((
              (I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  8) ^ F(k2, 8)) << 1)
             + I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  8) ^ F(k2, 8) ^ F(xl,  0) ^ F(k3,  0) ^ F(xr, 14))
             + I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  8) ^ F(k2, 8) ^ F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xr, 15))
@@ -368,17 +279,63 @@ uint32_t linearizeParity3()
             - I(F(xl,  6) ^ F(k3,  6) ^ F(xr,  4) ^ F(xr,  5) ^ F(xr, 14) ^ F(xr, 8) ^ F(k2, 8) ^ F(xl,  0) ^ F(k3,  0) ^ F(xr, 14) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15) ^ F(xr,  8) ^ F(xr,  6))
         ) >> 3);
 
+        uint16_t X1R15 = L((
+             (I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15)) << 1)
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr,  6) ^ F(xr, 15))
+            +(I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15)) << 1)
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr,  6) ^ F(xr, 15))
+            +(I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15)) << 1)
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr, 15))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr,  6) ^ F(xr, 15))
+            -(I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15)) << 1)
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr,  6))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 15))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6) ^ F(xr, 15))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr, 15))
+            + I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr,  6))
+            - I(F(xl, 13) ^ F(k3, 13) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr,  5) ^ F(xr, 15) ^ F(k2, 15) ^ F(xl, 14) ^ F(k3, 14) ^ F(xr, 12) ^ F(xl,  7) ^ F(k3,  7) ^ F(xr,  5) ^ F(xr, 13) ^ F(xr,  6) ^ F(xr, 15))
+        ) >> 3);;
 
-        uint16_t X1R15 = F(xr, 15) ^ F(k2, 15) ^ X2R13 ^ X2R14xX2R7;
         uint16_t X1R8xX1R15 = X1R8 & X1R15;
         uint16_t out_parity = F(xr, 2) ^ F(k2, 2) ^ F(k1, 0) ^ X2R1xX2R10 ^ X1R8xX1R15;
-        std::cout << "X1R8:  " << X1R8 << std::endl;
-        std::cout << "X1R15: " << X1R15 << std::endl;
-        std::cout << "X2R1  x X2R10: " << X2R1xX2R10 << std::endl;
-        std::cout << "X2R14 x X2R7: " << X2R14xX2R7 << std::endl;
-        std::cout << "X2R7  x X2R0: " << X2R7xX2R0 << std::endl;
-        std::cout << "X1R8  x X1R15: " << X1R8xX1R15 << std::endl;
-        std::cout << "out_parity: " << out_parity << ", actual: " << in_parity << std::endl;
 
         count += in_parity ^ out_parity;
     }

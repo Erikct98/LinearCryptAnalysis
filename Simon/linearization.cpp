@@ -63,11 +63,13 @@ uint32_t linearizeParity1()
     return count;
 }
 
+// {0, 1} -> {1, -1}
 int I(uint16_t a)
 {
     return 1 - (a << 1);
 }
 
+// {1, -1} -> {0, 1}
 uint16_t Iinv(int a)
 {
     return (1 - a) >> 1;
@@ -109,41 +111,35 @@ uint32_t linearizeParity2()
         uint16_t X1R12 = F(xl, 12) ^ F(k2, 12) ^ F(xr, 10) ^ Iinv((I(0) + I(F(xr, 4)) + I(F(xr, 11)) - I(F(xr, 4) ^ F(xr, 11))) >> 1);
 
         uint16_t X1R1xX1R10 = Iinv((
-            I(0)
-            +
-            ((I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15))
+            (I(0) << 2)
+            + I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15))
             + I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15) ^ F(xr, 0))
             + I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15) ^ F(xr, 9))
-            - I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 9))) >> 1)
-            +
-            ((I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8))
+            - I(F(xl, 1) ^ F(k2, 1) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 9))
+            + I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8))
             + I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 2))
             + I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 9))
-            - I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 2) ^ F(xr, 9))) >> 1)
-            -
-            ((I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15))
-            + I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 9))
-            + I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2))
-            - I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2) ^ F(xr, 9))) >> 1)
-        ) >> 1);
+            - I(F(xl, 10) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 2) ^ F(xr, 9))
+            - I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15))
+            - I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 9))
+            - I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2))
+            + I(F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2) ^ F(xr, 9))
+        ) >> 2);
         uint16_t X1R6xX1R13 = Iinv((
             I(0)
-            +
-            ((I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
+            + I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
             + I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5))
             + I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 12))
-            - I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12))) >> 1)
-            +
-            ((I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4))
+            - I(F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12))
+            + I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4))
             + I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5))
             + I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 14))
-            - I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5) ^ F(xr, 14))) >> 1)
-            -
-            ((I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11))
-            + I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
-            + I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
-            - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))) >> 1)
-        ) >> 1);
+            - I(F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5) ^ F(xr, 14))
+            - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11))
+            - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
+            - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
+            + I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
+        ) >> 2);
 
         uint16_t X0R2plusX2L0 = F(xr, 2) ^ F(k1, 2) ^ X1R1xX1R10;
         uint16_t X0R14 = F(xr, 14) ^ F(k1, 14) ^ X1R12 ^ X1R6xX1R13;

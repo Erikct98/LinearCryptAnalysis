@@ -99,7 +99,7 @@ uint32_t linearizeParity2()
 
     uint32_t count = 0;
     uint32_t pt, in_parity;
-    uint16_t xl, xr, X1R12, X1R1xX1R10, X1R6xX1R13, X0R2plusX2L0, X0R14;
+    uint16_t xl, xr, X0R2, X0R14;
     uint16_t k1 = subkeys[0], k2 = subkeys[1];
     for (uint32_t i = 0; i < NR_ITERATIONS; i++)
     {
@@ -114,9 +114,7 @@ uint32_t linearizeParity2()
         xl = ct >> 16;
         xr = ct & 0xFFFF;
 
-        X1R12 = L((I(0) + I(F(xr, 4)) + I(F(xr, 11)) - I(F(xr, 4) ^ F(xr, 11))) >> 1);
-
-        X1R1xX1R10 = L((
+        X0R2 = L((
              (I(F(k1, 2) ^ F(xr, 2)) << 1)
             + I(F(k1, 2) ^ F(xr, 2) ^ F(xl, 1) ^ F(k2, 1) ^ F(xr, 15))
             + I(F(k1, 2) ^ F(xr, 2) ^ F(xl, 1) ^ F(k2, 1) ^ F(xr, 15) ^ F(xr, 0))
@@ -131,7 +129,7 @@ uint32_t linearizeParity2()
             - I(F(k1, 2) ^ F(xr, 2) ^ F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2))
             + I(F(k1, 2) ^ F(xr, 2) ^ F(xl, 1) ^ F(xl, 10) ^ F(k2, 1) ^ F(k2, 10) ^ F(xr, 8) ^ F(xr, 15) ^ F(xr, 0) ^ F(xr, 2) ^ F(xr, 9))
         ) >> 2);
-        X1R6xX1R13 = L((
+        X0R14 = L((
              (I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14)) << 1)
             + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
             + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5))
@@ -145,12 +143,48 @@ uint32_t linearizeParity2()
             - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
             - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
             + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
-        ) >> 2);
+            +(I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14)) << 1)
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 12))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 14))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5) ^ F(xr, 14))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
+            +(I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14)) << 1)
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 12))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 14))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5) ^ F(xr, 14))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
+            -(I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14)) << 1)
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 12))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 13) ^ F(k2, 13) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 14))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(k2, 6) ^ F(xr, 4) ^ F(xr, 5) ^ F(xr, 14))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5))
+            + I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 12) ^ F(xr, 14))
+            - I(F(k1, 14) ^ F(k2, 12) ^ F(xl, 12) ^ F(xr, 4) ^ F(xr, 10) ^ F(xr, 11) ^ F(xr, 14) ^ F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 4) ^ F(xr, 11) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
+        ) >> 3);
 
-        X0R2plusX2L0 = X1R1xX1R10;
-        X0R14 = X1R12 ^ X1R6xX1R13;
-
-        count += in_parity ^ X0R2plusX2L0 ^ X0R14;
+        count += in_parity ^ X0R2 ^ X0R14;
     }
     return count;
 }

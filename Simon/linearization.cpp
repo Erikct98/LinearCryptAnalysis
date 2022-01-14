@@ -79,6 +79,26 @@ uint32_t linearizeParity1()
             + I(F(ct, 18) ^ F(k0, 2) ^ F(ct, 30) ^ F(k0, 14) ^ F(ct, 12) ^ F(ct, 6) ^ F(ct, 13) ^ F(ct, 1) ^ F(ct, 10))
         ) >> 2);
 
+        // out_parity = F(ct, 18) ^ F(k0, 2) ^ F(ct, 30) ^ F(k0, 14) ^ F(ct, 12) ^ \
+        // L((
+        //       I(0)
+        //     + I(F(ct, 1))
+        //     + I(F(ct, 6))
+        //     + I(F(ct, 10))
+        //     + I(F(ct, 13))
+        //     + I(F(ct,  1) ^ F(ct,  6))
+        //     - I(F(ct,  1) ^ F(ct, 10))
+        //     + I(F(ct,  1) ^ F(ct, 13))
+        //     + I(F(ct,  6) ^ F(ct, 10))
+        //     - I(F(ct,  6) ^ F(ct, 13))
+        //     + I(F(ct, 10) ^ F(ct, 13))
+        //     - I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 10))
+        //     - I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 13))
+        //     - I(F(ct,  1) ^ F(ct, 10) ^ F(ct, 13))
+        //     - I(F(ct,  6) ^ F(ct, 10) ^ F(ct, 13))
+        //     + I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 10) ^ F(ct, 13))
+        // ) >> 2);
+
         count += out_parity ^ in_parity;
     }
     return count;

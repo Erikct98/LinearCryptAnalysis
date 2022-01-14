@@ -61,63 +61,24 @@ uint32_t linearizeParity1()
         xr = ct & 0xFFFF;
 
         // Linear approximation
-        out_parity = L((
-              I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  1))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr, 10))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  1) ^ F(xr, 10))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr,  1))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr, 10))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr,  1) ^ F(xr, 10))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr, 13))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr, 1))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr, 10))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr, 13))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr, 13) ^ F(xr,  1))
-            - I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr, 13) ^ F(xr, 10))
-            + I(F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ F(xr,  6) ^ F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
+        out_parity = F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ L((
+              I(0)
+            + I(F(xr,  1))
+            + I(F(xr, 10))
+            - I(F(xr,  1) ^ F(xr, 10))
+            + I(F(xr,  6))
+            + I(F(xr,  6) ^ F(xr,  1))
+            + I(F(xr,  6) ^ F(xr, 10))
+            - I(F(xr,  6) ^ F(xr,  1) ^ F(xr, 10))
+            + I(F(xr, 13))
+            + I(F(xr, 13) ^ F(xr, 1))
+            + I(F(xr, 13) ^ F(xr, 10))
+            - I(F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
+            - I(F(xr,  6) ^ F(xr, 13))
+            - I(F(xr,  6) ^ F(xr, 13) ^ F(xr,  1))
+            - I(F(xr,  6) ^ F(xr, 13) ^ F(xr, 10))
+            + I(F(xr,  6) ^ F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
         ) >> 2);
-
-        // out_parity = F(xl, 2) ^ F(k0, 2) ^ F(xl, 14) ^ F(k0, 14) ^ F(xr, 12) ^ L((
-        //       I(0)
-        //     + I(F(xr,  1))
-        //     + I(F(xr, 10))
-        //     - I(F(xr,  1) ^ F(xr, 10))
-        //     + I(F(xr,  6))
-        //     + I(F(xr,  6) ^ F(xr,  1))
-        //     + I(F(xr,  6) ^ F(xr, 10))
-        //     - I(F(xr,  6) ^ F(xr,  1) ^ F(xr, 10))
-        //     + I(F(xr, 13))
-        //     + I(F(xr, 13) ^ F(xr, 1))
-        //     + I(F(xr, 13) ^ F(xr, 10))
-        //     - I(F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
-        //     - I(F(xr,  6) ^ F(xr, 13))
-        //     - I(F(xr,  6) ^ F(xr, 13) ^ F(xr,  1))
-        //     - I(F(xr,  6) ^ F(xr, 13) ^ F(xr, 10))
-        //     + I(F(xr,  6) ^ F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
-        // ) >> 2);
-
-        // out_parity = F(ct, 18) ^ F(k0, 2) ^ F(ct, 30) ^ F(k0, 14) ^ F(ct, 12) ^ \
-        // L((
-        //       I(0)
-        //     + I(F(ct, 1))
-        //     + I(F(ct, 6))
-        //     + I(F(ct, 10))
-        //     + I(F(ct, 13))
-        //     + I(F(ct,  1) ^ F(ct,  6))
-        //     - I(F(ct,  1) ^ F(ct, 10))
-        //     + I(F(ct,  1) ^ F(ct, 13))
-        //     + I(F(ct,  6) ^ F(ct, 10))
-        //     - I(F(ct,  6) ^ F(ct, 13))
-        //     + I(F(ct, 10) ^ F(ct, 13))
-        //     - I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 10))
-        //     - I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 13))
-        //     - I(F(ct,  1) ^ F(ct, 10) ^ F(ct, 13))
-        //     - I(F(ct,  6) ^ F(ct, 10) ^ F(ct, 13))
-        //     + I(F(ct,  1) ^ F(ct,  6) ^ F(ct, 10) ^ F(ct, 13))
-        // ) >> 2);
 
         count += out_parity ^ in_parity;
     }

@@ -11,6 +11,7 @@ OBJMATSUI		    = matsui2.o
 OBJDECRYPT		    = test_decrypt.o
 OBJPTGEN			= plaintextgen.o
 OBJLINEARIZE		= linearize.o
+OBJLINEARIZEDTRAIL	= linearizedTrail.o
 
 EXESPEED			= speedtest.exe
 EXESPEEDPAR			= parspeedtest.exe
@@ -19,6 +20,7 @@ EXEMATSUI			= matsui2.exe
 EXEDECRYPT			= decrypt.exe
 EXEPTGEN			= plaintextgen.exe
 EXELINEARIZE 		= linearize.exe
+EXELINEARIZEDTRAIL  = linearizedTrail.exe
 
 _simon:
 	${CC} -c -o ${OBJSIMON} simon.cpp ${CFLAGS}
@@ -54,7 +56,12 @@ linearize: _simon _toolbox
 	${CC} -c -o ${OBJLINEARIZE} linearization.cpp ${CFLAGS}
 	${CC} -o ${EXELINEARIZE} ${OBJLINEARIZE} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
 
+linearizedtrail: _simon _toolbox
+	${CC} -c -o ${OBJLINEARIZEDTRAIL} LinearizedTrailTest.cpp ${CFLAGS}
+	${CC} -o ${EXELINEARIZEDTRAIL} ${OBJLINEARIZEDTRAIL} ${OBJSIMON} ${OBJTOOLBOX} ${CFLAGS}
+
 clean:
 	rm -f ${OBJSIMON} ${OBJTOOLBOX} ${OBJSPEED} ${OBJTRAIL} ${OBJMATSUI} ${OBJDECRYPT} \
-	${OBJPTGEN}	${OBJLINEARIZE} ${OBJSPEEDPAR} ${EXESPEED} ${EXETRAIL} ${EXEMATSUI} \
-	${EXEDECRYPT} ${EXEPTGEN} ${EXELINEARIZE} ${EXESPEEDPAR}
+	${OBJPTGEN}	${OBJLINEARIZE} ${OBJSPEEDPAR} ${OBJLINEARIZEDTRAIL} \
+	${EXESPEED} ${EXETRAIL} ${EXEMATSUI} ${EXEDECRYPT} ${EXEPTGEN} ${EXELINEARIZE} \
+	${EXESPEEDPAR} ${EXELINEARIZEDTRAIL}

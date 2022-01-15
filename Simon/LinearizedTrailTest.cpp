@@ -136,6 +136,7 @@ int main()
     std::srand(time(0));
     uint32_t results[NR_TESTS];
     uint64_t key;
+    #pragma omp parallel for
     for (uint32_t i = 0; i < NR_TESTS; i ++)
     {
         key = rand_uint64();

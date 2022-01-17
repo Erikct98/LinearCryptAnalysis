@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <stdio.h>
 #include "simon.h"
 #include "toolbox.h"
 
@@ -9,6 +10,7 @@ uint8_t ENC_ROUNDS = 32;
 uint64_t ITERATIONS = 0x80000000;
 uint64_t SEED = 0;
 uint32_t PRIME = 78367;
+// uint32_t PRIME = 2971215073;
 
 // Randomization
 std::mt19937 _mt(0);
@@ -25,9 +27,9 @@ void testplaintextgen()
     uint16_t subkeys[ENC_ROUNDS];
     generateSubKeys(KEY, subkeys, ENC_ROUNDS);
 
-    std::chrono::_V2::system_clock::time_point start_a, stop_a, start_b, stop_b, start_c, stop_c;
+    std::chrono::_V2::system_clock::time_point start_a, stop_a, start_b, stop_b, start_c, stop_c, start_d, stop_d;
     uint32_t pt = 0;
-    uint64_t checksum_a = 0, checksum_b = 0, checksum_c = 0;
+    uint64_t checksum_a = 0, checksum_b = 0, checksum_c = 0, checksum_d = 0;
 
     // RANDOM
     start_a = std::chrono::high_resolution_clock::now();
@@ -55,6 +57,17 @@ void testplaintextgen()
     }
     stop_c = std::chrono::high_resolution_clock::now();
 
+    // RANDOM FROM FILE
+    FILE *stream = fopen("/dev/urandom", "rb");
+    char ptarr[8];
+    start_d = std::chrono::high_resolution_clock::now();
+    for (uint64_t i = 0; i < ITERATIONS; i++)
+    {
+        checksum_d += encrypt(*((uint32_t *)fgets(ptarr, 8, stream)), subkeys, ENC_ROUNDS);
+    }
+    stop_d = std::chrono::high_resolution_clock::now();
+    fclose(stream);
+
     // Output results
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop_a - start_a);
     std::cout << "Time A (mus): " << duration.count() << std::endl;
@@ -62,6 +75,8 @@ void testplaintextgen()
     std::cout << "Time B (mus): " << duration.count() << std::endl;
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop_c - start_c);
     std::cout << "Time C (mus): " << duration.count() << std::endl;
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop_d - start_d);
+    std::cout << "Time D (mus): " << duration.count() << std::endl;
 
     // Report any errors
     if (checksum_a != 576450066884551532)
@@ -76,8 +91,8 @@ void testplaintextgen()
     {
         std::cout << "INCORRECT C! found: " << checksum_c << std::endl;
     }
+    std::cout << "D found: " << checksum_d << std::endl;
 }
-
 
 int main()
 {

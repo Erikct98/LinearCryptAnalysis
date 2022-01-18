@@ -27,7 +27,7 @@ uint16_t L(int a)
 
 #define F(a, b) (a >> b & 0x1)
 
-uint64_t compute_correlation(uint64_t key)
+uint64_t compute_correlation_linearized(uint64_t key)
 {
     // Constants
     uint64_t count = 0;
@@ -118,6 +118,33 @@ uint64_t compute_correlation(uint64_t key)
         ) >> 3);
 
         count += getParity(pt & IPM) ^ X0R2 ^ X0R14;
+    }
+    return count;
+}
+
+uint64_t compute_correlation_non_linearized(uint64_t key)
+{
+    // Constants
+    uint64_t count = 0;
+    uint32_t pt, ct, X0R2, X0R14, xl, xr;
+    uint16_t subkeys[ENC_ROUNDS];
+    uint16_t k7;
+    uint16_t X6R12, X6R01, X6R10, X6R13, X6R06, X6L14, X6L02;
+    generateSubKeys(key, subkeys, ENC_ROUNDS);
+    for (uint32_t i = 0; i < SAMPLE_SIZE; i++)
+    {
+        pt = rand_uint32();
+        ct = encrypt(pt, subkeys, ENC_ROUNDS);
+        k7 = subkeys[ENC_ROUNDS - 1];
+        X6R12 = F(ct, 28) ^ F(k7, 12) ^ F(ct, 10) ^ F(ct, 11) & F(ct,  4);
+        X6R01 = F(ct, 17) ^ F(k7,  1) ^ F(ct, 15) ^ F(ct,  0) & F(ct,  9);  // X7L[ 1] + k7[ 1] + X7R[15] + X7R[ 0] * X7R[ 9]
+        X6R10 = F(ct, 26) ^ F(k7, 10) ^ F(ct,  8) ^ F(ct,  9) & F(ct,  2);  // X7L[10] + k7[10] + X7R[ 8] + X7R[ 9] * X7R[ 2]
+        X6R13 = F(ct, 29) ^ F(k7, 13) ^ F(ct, 11) ^ F(ct, 12) & F(ct,  5);  // X7L[13] + k7[13] + X7R[11] + X7R[12] * X7R[ 5]
+        X6R06 = F(ct, 22) ^ F(k7,  6) ^ F(ct,  4) ^ F(ct,  5) & F(ct, 14);  // X7L[ 6] + k7[ 6] + X7R[ 4] + X7R[ 5] * X7R[14]
+        X6L14 = F(ct, 14);
+        X6L02 = F(ct,  2);
+
+        count += (getParity(pt & IPM) ^ (X6L02 ^ X6R01 & X6R10 ^ X6L14 ^ X6R12 ^ X6R13 & X6R06)) & 1;
     }
     return count;
 }

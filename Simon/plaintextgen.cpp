@@ -59,11 +59,17 @@ void testplaintextgen()
 
     // RANDOM FROM FILE
     FILE *stream = fopen("/dev/urandom", "rb");
-    char ptarr[8];
+    uint32_t iters = 0x20000;
+    char ptarr[4*iters];
+    uint32_t *pts;
     start_d = std::chrono::high_resolution_clock::now();
-    for (uint64_t i = 0; i < ITERATIONS; i++)
+    for (uint64_t i = 0; i < ITERATIONS / iters; i++)
     {
-        checksum_d += encrypt(*((uint32_t *)fgets(ptarr, 8, stream)), subkeys, ENC_ROUNDS);
+        pts = (uint32_t *)fgets(ptarr, 4*iters, stream);
+        for (uint64_t j = 0; j < iters; j ++)
+        {
+            checksum_d += encrypt(pts[j], subkeys, ENC_ROUNDS);
+        }
     }
     stop_d = std::chrono::high_resolution_clock::now();
     fclose(stream);

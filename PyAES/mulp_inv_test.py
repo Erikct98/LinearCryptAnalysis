@@ -71,7 +71,7 @@ def print_LAT_table(table, indent=4):
 def print_linearized(table, out_idx):
     for idx, row in enumerate(table):
         # if row[out_idx]:
-        print(f"{row[out_idx]: 3} * I({' ^ '.join([f'x[{i}]' for i, b in enumerate(reversed(f'{idx:08b}')) if b == '1']) or 0})")
+        print(f"{row[out_idx]: 3} * I({' ^ '.join([f'F(pt, {i}]' for i, b in enumerate(reversed(f'{idx:08b}')) if b == '1']) or 0})")
 
 
 def transpose(table):
@@ -99,11 +99,11 @@ def print_counters():
 # print_counters()
 
 # x=[]
-# -16 * I(x[0] ^ x[1] ^ x[4] ^ x[5] ^ x[6] ^ x[7])
-# -16 * I(x[0] ^ x[2] ^ x[5] ^ x[6])
-# -16 * I(x[0] ^ x[5] ^ x[6] ^ x[7])
-# -16 * I(x[1] ^ x[2] ^ x[4] ^ x[7])
-# -16 * I(x[2] ^ x[7])
+# -16 * I(F(pt, 0] ^ F(pt, 1] ^ F(pt, 4] ^ F(pt, 5] ^ F(pt, 6] ^ F(pt, 7])
+# -16 * I(F(pt, 0] ^ F(pt, 2] ^ F(pt, 5] ^ F(pt, 6])
+# -16 * I(F(pt, 0] ^ F(pt, 5] ^ F(pt, 6] ^ F(pt, 7])
+# -16 * I(F(pt, 1] ^ F(pt, 2] ^ F(pt, 4] ^ F(pt, 7])
+# -16 * I(F(pt, 2] ^ F(pt, 7])
 
 # print(get_bit_count(0))
 
@@ -148,13 +148,53 @@ def compute_correlation():
     OPM = 0x74
     count = 0
     for pt in range(256):
-        in_par = (I(F(pt, 1) ^ F(pt, 2)) \
-             + I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7))\
-             + I(F(pt, 1) ^ F(pt, 4))\
-             + I(F(pt, 1) ^ F(pt, 7))\
-             + I(F(pt, 2) ^ F(pt, 4)))
+        a1 = I(F(pt, 1) ^ F(pt, 2))
+        a2 = I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7))
+        a3 = I(F(pt, 1) ^ F(pt, 4))
+        a4 = I(F(pt, 1) ^ F(pt, 7))
+        a5 = I(F(pt, 2) ^ F(pt, 4))
+        in_par = a1 + a2 + a3 + a4 + 2 * a5
+        print(f'{a1=: 2}, {a2=: 2}, {a3=: 2}, {a4=: 2}, {a5=: 2}, {in_par=:2}')
         out_par = get_parity(sbox[pt] & OPM)
-        count += (in_par > 0) ^ out_par
+        count += (in_par >= 0) ^ out_par
     return 2 * (count / 256) - 1
 
-print(compute_correlation())
+
+def compute_correlation_v2():
+    sbox = get_sbox_LUT()
+    OPM = 0x74
+    count = 0
+    for pt in range(256):
+        x = [
+             I(F(pt, 0) ^ F(pt, 2)),
+             I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2)),
+            -I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3)),
+             I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 4)),
+            -I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 5)),
+            -I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 5)),
+             I(F(pt, 0) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 5)),
+            -I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 5)),
+             I(F(pt, 1) ^ F(pt, 2)),
+            -I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 6) ^ F(pt, 7)),
+             I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 6)),
+             I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7)),
+            -I(F(pt, 1) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 6)),
+             I(F(pt, 1) ^ F(pt, 4)),
+             I(F(pt, 1) ^ F(pt, 5) ^ F(pt, 6)),
+             I(F(pt, 1) ^ F(pt, 7)),
+            -I(F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6)),
+             I(F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7)),
+             I(F(pt, 2) ^ F(pt, 4)),
+            -I(F(pt, 2) ^ F(pt, 6) ^ F(pt, 7)),
+             I(F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7)),
+        ]
+
+        in_par = sum(x)
+        out_par = get_parity(sbox[pt] & OPM)
+        count += (in_par >= 0) ^ out_par
+    return 2 * (count / 256) - 1
+
+# print(compute_correlation_v2())
+sbox = get_sbox_LUT()
+for i in range(256):
+    print(f"0x{sbox[i]:02X}")

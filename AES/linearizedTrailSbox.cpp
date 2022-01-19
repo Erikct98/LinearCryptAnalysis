@@ -19,84 +19,78 @@ uint8_t F(uint8_t x, uint8_t i)
 
 inline uint8_t getParity(uint8_t v)
 {
-    return (0x6996 >> (v ^ v >> 4) & 0xF) & 0x1;
+    v ^= v >> 4;
+    v &= 0xf;
+    return (0x6996 >> v) & 0x1;
 }
 
-void linearize_sbox_with_5_equations()
+uint8_t approx_7A_with_5(uint8_t word)
 {
-    uint8_t ct;
-    uint16_t count = 0;
-    uint8_t in_parity, out_parity;
-    int linearized, linearized2;
-    int a1, a2, a3, a4, a5;
-    for (uint16_t pt = 0; pt < 0x100; pt++)
-    {
-        // Encrypt
-        ct = SubByte(pt);
-
-        a1 = I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7));
-        a3 = I(F(pt, 1) ^ F(pt, 4));
-        a4 = I(F(pt, 1) ^ F(pt, 7));
-        a5 = I(F(pt, 2) ^ F(pt, 4));
-
-        linearized2 = I(F(pt, 1) ^ F(pt, 2)) + I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7)) + I(F(pt, 1) ^ F(pt, 4)) + I(F(pt, 1) ^ F(pt, 7)) + I(F(pt, 2) ^ F(pt, 4));
-
-        // Linearize
-        linearized = a1 + a3 + a4 + a5;
-        std::cout << a1 << " " << a2 << " " << a3 << " " << a4 << " " << a5 << " " << linearized << " " << linearized2 << std::endl;
-
-        in_parity = linearized >= 0;
-        out_parity = getParity(ct & OPM);
-
-        count += (in_parity ^ out_parity) & 1;
-    }
-    std::cout << count << "/" << 256 << std::endl;
+    return (I(F(word, 1) ^ F(word, 2))\
+         + I(F(word, 1) ^ F(word, 2) ^ F(word, 4) ^ F(word, 7))\
+         + I(F(word, 1) ^ F(word, 4))\
+         + I(F(word, 1) ^ F(word, 7))\
+         + I(F(word, 2) ^ F(word, 4)) ) >= 0;
 }
 
-void linearize_sbox_with_21_equations()
+uint8_t approx_7A_with_21(uint8_t word)
 {
-    uint8_t ct;
+    return (I(F(word, 0) ^ F(word, 2)) \
+         + I(F(word, 0) ^ F(word, 1) ^ F(word, 2)) \
+         - I(F(word, 0) ^ F(word, 1) ^ F(word, 3)) \
+         + I(F(word, 0) ^ F(word, 1) ^ F(word, 3) ^ F(word, 4)) \
+         - I(F(word, 0) ^ F(word, 1) ^ F(word, 3) ^ F(word, 5)) \
+         - I(F(word, 0) ^ F(word, 1) ^ F(word, 2) ^ F(word, 3) ^ F(word, 5)) \
+         + I(F(word, 0) ^ F(word, 2) ^ F(word, 4) ^ F(word, 5)) \
+         - I(F(word, 0) ^ F(word, 1) ^ F(word, 2) ^ F(word, 4) ^ F(word, 5)) \
+         + I(F(word, 1) ^ F(word, 2)) \
+         - I(F(word, 1) ^ F(word, 2) ^ F(word, 3) ^ F(word, 6) ^ F(word, 7)) \
+         + I(F(word, 1) ^ F(word, 2) ^ F(word, 4) ^ F(word, 6)) \
+         + I(F(word, 1) ^ F(word, 2) ^ F(word, 4) ^ F(word, 7)) \
+         - I(F(word, 1) ^ F(word, 3) ^ F(word, 4) ^ F(word, 6)) \
+         + I(F(word, 1) ^ F(word, 4)) \
+         + I(F(word, 1) ^ F(word, 5) ^ F(word, 6)) \
+         + I(F(word, 1) ^ F(word, 7)) \
+         - I(F(word, 2) ^ F(word, 3) ^ F(word, 4) ^ F(word, 5) ^ F(word, 6)) \
+         + I(F(word, 2) ^ F(word, 3) ^ F(word, 4) ^ F(word, 5) ^ F(word, 6) ^ F(word, 7)) \
+         + I(F(word, 2) ^ F(word, 4)) \
+         - I(F(word, 2) ^ F(word, 6) ^ F(word, 7)) \
+         + I(F(word, 4) ^ F(word, 5) ^ F(word, 6) ^ F(word, 7))) >= 0;
+}
+
+void linearize_sbox_output_with_5_terms()
+{
+    uint8_t pt, ct;
     uint16_t count = 0;
-    uint8_t in_parity, out_parity;
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        // Encrypt
         ct = SubByte(pt);
-
-        // Linearize
-        linearized = I(F(pt, 0) ^ F(pt, 2)) \
-                    + I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2)) \
-                    - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3)) \
-                    + I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 4)) \
-                    - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 5)) \
-                    - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 5)) \
-                    + I(F(pt, 0) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 5)) \
-                    - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 5)) \
-                    + I(F(pt, 1) ^ F(pt, 2)) \
-                    - I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 6) ^ F(pt, 7)) \
-                    + I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 6)) \
-                    + I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7)) \
-                    - I(F(pt, 1) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 6)) \
-                    + I(F(pt, 1) ^ F(pt, 4)) \
-                    + I(F(pt, 1) ^ F(pt, 5) ^ F(pt, 6)) \
-                    + I(F(pt, 1) ^ F(pt, 7)) \
-                    - I(F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6)) \
-                    + I(F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7)) \
-                    + I(F(pt, 2) ^ F(pt, 4)) \
-                    - I(F(pt, 2) ^ F(pt, 6) ^ F(pt, 7)) \
-                    + I(F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7));
-
-        in_parity = linearized >= 0;
-        out_parity = getParity(ct & OPM);
-
-        count += in_parity ^ out_parity;
+        count += (approx_7A_with_5(pt) ^ getParity(ct & OPM)) & 1;
     }
-    std::cout << count << "/" << 256 << std::endl;
+    std::cout << "--- 5 TERMS ---" << std::endl;
+    std::cout << "count: " << count << " / " << 256 << std::endl;
+    std::cout << "corr: " << (2 * (count / 256.0) - 1) << std::endl;
+}
+
+void linearize_sbox_output_with_21_terms()
+{
+    uint8_t ct;
+    uint16_t count = 0;
+    int linearized;
+    for (uint16_t pt = 0; pt < 0x100; pt++)
+    {
+        ct = SubByte(pt);
+        count += (approx_7A_with_21(pt) ^ getParity(ct & OPM)) & 1;
+    }
+    std::cout << "--- 21 TERMS ---" << std::endl;
+    std::cout << "count: " << count << " / " << 256 << std::endl;
+    std::cout << "corr: " << (2 * (count / 256.0) - 1) << std::endl;
 }
 
 int main()
 {
-    linearize_sbox_with_5_equations();
+    linearize_sbox_output_with_5_terms();
+    linearize_sbox_output_with_21_terms();
     return 0;
 }

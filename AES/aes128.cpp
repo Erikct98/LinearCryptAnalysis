@@ -49,7 +49,7 @@ static const uint8_t sbox[256] = {
 
 uint8_t SubByte(uint8_t word)
 {
-    return sbox[word];
+    return sbox[word & 0xFF];
 }
 
 inline void SubBytes(uint32_t *grid)

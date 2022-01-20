@@ -40,15 +40,18 @@ sbox = [
 ]
 
 def F(x, i):
-    return x >> i & 0x1
+    return (x >> i) & 0x1
 
 def I(x):
     return 1-(x<<1)
 
-def P(x):
-    x ^= x >> 4
-    x &= 0xF
-    return (0x6996 >> x) & 0x1
+def J(x):
+    return (1 - x) >> 1
+
+def P(v):
+    v ^= v >> 4
+    v &= 0xF
+    return (0x6996 >> v) & 0x1
 
 def nr_bits(x):
     return []
@@ -135,10 +138,30 @@ def print_linearization_for_ipm(ipm: int, nr_terms = 5):
     remainder = "P(pt & ipm)"
     compute_correlation(formula, remainder, ipm=ipm)
 
-random_find_linearization_for_opm(0x7A, 10, 57, 1024)
 
 
+def test_linearization():
+    count = 0
+    for pt in GF2_8:
+        tally = - I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 6))\
+              - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 6) ^ F(pt, 7))\
+              - I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 7))\
+              + I(F(pt, 0) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 7))\
+              + I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 5))
+        in_parity = tally >= 0
 
+        # in_parity = (1- F(pt, 1)) * (1-F(pt, 6)) * (F(pt, 3) ^ F(pt, 7))
+
+        # in_parity = ((a1 + a2 + a3 + a4) // 2) >= 0
+        # print(in_parity, tally)
+
+        out_parity = P(sbox[pt] & 0x7A)
+        count += (in_parity ^ out_parity) & 0x1
+    print(count)
+
+if __name__ == "__main__":
+    random_find_linearization_for_opm(0x7A, 20, 57, 2048)
+    # test_linearization()
 
 
 # print("IPM")

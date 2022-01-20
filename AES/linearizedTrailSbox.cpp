@@ -42,7 +42,40 @@ bool approx_7A_with_5(uint8_t word)
 
 uint8_t approx_7A_with_10(uint8_t pt)
 {
-    return (-16 * I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 6)) + -16 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 6) ^ F(pt, 7)) + -14 * I(F(pt, 0) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7)) + -16 * I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 7)) + -16 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 5) ^ F(pt, 7)) +  14 * I(F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6)) + -14 * I(F(pt, 1) ^ F(pt, 5) ^ F(pt, 7)) +  14 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 5)) + -16 * I(F(pt, 0) ^ F(pt, 1)) +  14 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 7))) >= 0;
+    return (-16 * I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 6))
+            +-16 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 6) ^ F(pt, 7))
+            +-14 * I(F(pt, 0) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7))
+            +-16 * I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 7))
+            +-16 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 5) ^ F(pt, 7))
+            + 14 * I(F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6))
+            +-14 * I(F(pt, 1) ^ F(pt, 5) ^ F(pt, 7))
+            + 14 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 5))
+            +-16 * I(F(pt, 0) ^ F(pt, 1))
+            + 14 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 7))) >= 0;
+}
+
+uint8_t approx_7A_with_20(uint8_t pt)
+{
+    return ( 14 * I(F(pt, 1) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6) ^ F(pt, 7))
+           +-12 * I(F(pt, 0) ^ F(pt, 3) ^ F(pt, 7))
+           + 14 * I(F(pt, 3))
+           + 14 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 7))
+           +-16 * I(F(pt, 3) ^ F(pt, 5) ^ F(pt, 6))
+           +-12 * I(F(pt, 0) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 6) ^ F(pt, 7))
+           + 12 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4))
+           +-14 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2))
+           +-12 * I(F(pt, 1) ^ F(pt, 4) ^ F(pt, 6))
+           + 14 * I(F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 6))
+           +-16 * I(F(pt, 0) ^ F(pt, 1))
+           +-12 * I(F(pt, 2) ^ F(pt, 4) ^ F(pt, 5))
+           + 14 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 5))
+           +-16 * I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 3) ^ F(pt, 5) ^ F(pt, 7))
+           +-12 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 6))
+           + 12 * I(F(pt, 0) ^ F(pt, 3) ^ F(pt, 5) ^ F(pt, 6))
+           + 12 * I(F(pt, 0) ^ F(pt, 2) ^ F(pt, 4))
+           +-14 * I(F(pt, 1) ^ F(pt, 3) ^ F(pt, 5))
+           +-12 * I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 3) ^ F(pt, 5))
+           + 12 * I(F(pt, 2) ^ F(pt, 3) ^ F(pt, 4) ^ F(pt, 5) ^ F(pt, 7))) >= 0;
 }
 
 uint8_t approx_74_with_21(uint8_t word)
@@ -172,6 +205,24 @@ void linearize_sbox_output_7A_with_10_terms()
     std::cout << "corr: " << (2 * (count / 256.0) - 1) << std::endl;
 }
 
+
+void linearize_sbox_output_7A_with_20_terms()
+{
+    uint8_t OPM = 0x7A;
+    uint8_t pt, ct;
+    uint16_t count = 0;
+    int linearized;
+    for (uint16_t pt = 0; pt < 0x100; pt++)
+    {
+        ct = SubByte(pt);
+        count += (approx_7A_with_20(pt) ^ getParity(ct & OPM)) & 1;
+    }
+    std::cout << "--- 7A - 20 TERMS ---" << std::endl;
+    std::cout << "count: " << count << " / " << 256 << std::endl;
+    std::cout << "corr: " << (2 * (count / 256.0) - 1) << std::endl;
+}
+
+
 void linearize_sbox_output_74_with_21_terms()
 {
     uint8_t OPM = 0x74;
@@ -208,6 +259,7 @@ int main()
 {
     linearize_sbox_output_7A_with_5_terms();
     linearize_sbox_output_7A_with_10_terms();
+    linearize_sbox_output_7A_with_20_terms();
     linearize_sbox_output_7A_with_50_terms();
     linearize_sbox_output_74_with_5_terms();
     linearize_sbox_output_74_with_21_terms();

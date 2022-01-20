@@ -1,5 +1,6 @@
 from typing import List, Tuple
 from LAT import LAT
+import random
 
 GF2_8 = range(256)
 
@@ -67,12 +68,16 @@ def compute_correlation(formula1, formula2, ipm=None, opm=None):
     # print(f"count: {count} / 256  -> correlation: {(2 * (count / 256) - 1)}")
     return count
 
-def print_linearization_for_opm(opm: int, nr_terms = 5):
-    # Sort input masks based on correlation
+def get_opm_mapping(opm: int):
+# Sort input masks based on correlation
     mapping = []
     for ipm in GF2_8:
         count = LAT[ipm][opm]
         mapping.append((abs(count), count, ipm))
+    return mapping
+
+def print_linearization_for_opm(opm: int, nr_terms = 5):
+    mapping = get_opm_mapping(opm)
     mapping.sort(reverse=True)
 
     # Create linearization "code"
@@ -89,6 +94,28 @@ def print_linearization_for_opm(opm: int, nr_terms = 5):
         optimals.setdefault(count, i)
         corr = 2 * (count / 256) - 1
         print(f"{i=}, {count=}, {corr=}")
+
+
+def random_find_linearization_for_opm(opm: int, nr_terms =5, pool_size=256, iterations=10):
+    assert nr_terms <= pool_size
+    mapping = get_opm_mapping(opm)
+    mapping.sort(reverse=True)
+
+    remainder = "P(ct & opm)"
+    pool = mapping[:pool_size]
+    best = (128,0,-1, [0])
+    for i in range(iterations):
+        # Generate random formula
+        random.shuffle(pool)
+        terms = pool[:nr_terms]
+        formula = create_linearization(terms, "pt")
+
+        # Compute correlation
+        count = compute_correlation(formula, remainder, opm=opm)
+        corr = 2 * (count / 256) - 1
+        if abs(corr) > abs(best[1]):
+            best = (count, corr, i, formula, terms)
+    print(best)
 
 
 def print_linearization_for_ipm(ipm: int, nr_terms = 5):
@@ -108,7 +135,11 @@ def print_linearization_for_ipm(ipm: int, nr_terms = 5):
     remainder = "P(pt & ipm)"
     compute_correlation(formula, remainder, ipm=ipm)
 
-print_linearization_for_opm(0x7A, 20, 57)
+random_find_linearization_for_opm(0x7A, 10, 57, 1024)
+
+
+
+
 
 # print("IPM")
 # for i in range(1, 60):

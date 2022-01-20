@@ -69,15 +69,22 @@ bool TestEncryption()
 {
     // Test vector
     uint32_t key[4] = {
-        0x01234567,
-        0x89abcdef,
-        0xfedcba98,
-        0x76543210};
+        0x2b7e1516,
+        0x28aed2a6,
+        0xabf71588,
+        0x09cf4f3c
+    };
     uint32_t pt[4] = {
-
+        0x3243f6a8,
+        0x885a308d,
+        0x313198a2,
+        0xe0370734
     };
     uint32_t ct[4] = {
-
+        0x3925841d,
+        0x02dc09fb,
+        0xdc118597,
+        0x196a0b32
     };
 
     // Encrypt
@@ -115,5 +122,6 @@ bool TestEncryption()
 int main()
 {
     TestKeyExpansion();
+    TestEncryption();
     return 0;
 }

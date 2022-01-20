@@ -4,7 +4,8 @@
 #define ROUNDS 10
 
 // Section-Wise (8 bits) CYclic LEft SHift uint64_t's over by one bit.
-#define sw8cylesh64_1(word) ((word & 0x7F7F7F7F7F7F7F7F << 1) ^ (word & 0x8080808080808080 >> 8))
+#define sw8cylesh32_1(word) (((word & 0x7F7F7F7F) << 1 ^ (word & 0x80808080) >> 7))
+#define sw8cylesh64_1(word) ((word & 0x7F7F7F7F7F7F7F7F) << 1 ^ (word & 0x8080808080808080) >> 7)
 
 // CYclic LEft SHift uint32_t's by X bits
 #define cylesh32_8(word) (word << 8 ^ word >> 24)
@@ -73,15 +74,21 @@ inline void SubBytes(uint32_t *grid)
 
 inline void ShiftRows(uint32_t *grid)
 {
-    grid[1] = cylesh32_8(grid[1]);
-    grid[2] = cylesh32_16(grid[2]);
-    grid[3] = cylesh32_24(grid[3]);
+    uint32_t tmp[4];
+    tmp[0] = grid[0] & 0xFF000000 ^ grid[1] & 0xFF0000 ^ grid[2] & 0xFF00 ^ grid[3] & 0xFF;
+    tmp[1] = grid[1] & 0xFF000000 ^ grid[2] & 0xFF0000 ^ grid[3] & 0xFF00 ^ grid[0] & 0xFF;
+    tmp[2] = grid[2] & 0xFF000000 ^ grid[3] & 0xFF0000 ^ grid[0] & 0xFF00 ^ grid[1] & 0xFF;
+    tmp[3] = grid[3] & 0xFF000000 ^ grid[0] & 0xFF0000 ^ grid[1] & 0xFF00 ^ grid[2] & 0xFF;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        grid[i] = tmp[i];
+    }
 }
 
 inline uint32_t mulp2(uint32_t a)
 {
-    uint32_t x = sw8cylesh64_1(a);
-    return (x & 0xFEFEFEFE) ^ (x & 0x01010101) * 0x1B;
+    uint32_t x = sw8cylesh32_1(a);
+    return (x & 0xFEFEFEFE) ^ ((x & 0x01010101) * 0x1B);
 }
 
 inline void MixColumns(uint32_t *state)
@@ -90,10 +97,9 @@ inline void MixColumns(uint32_t *state)
     for (uint8_t i = 0; i < 4; i++)
     {
         tmp[i] = mulp2(state[i]);
-        tmp[i] ^= mulp2(state[i + 1 % 4]);
-        tmp[i] ^= state[i + 1 % 4];
-        tmp[i] ^= state[i + 2 % 4];
-        tmp[i] ^= state[i + 3 % 4];
+        tmp[i] ^= mulp2(cylesh32_8(state[i])) ^ cylesh32_8(state[i]);
+        tmp[i] ^= cylesh32_16(state[i]);
+        tmp[i] ^= cylesh32_24(state[i]);
     }
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -130,10 +136,10 @@ void ExpandKey(uint32_t *key, uint32_t *expandedkey, uint8_t nr_rounds)
     }
 }
 
-inline void AddRoundKey(uint32_t *State, uint32_t* ExpandedKey)
+inline void AddRoundKey(uint32_t *State, uint32_t* ExpandedKey, uint8_t round)
 {
-    for (uint8_t i =0; i< 4; i++){
-        State[i] ^= ExpandedKey[i];
+    for (uint8_t i = 0; i < 4; i++){
+        State[i] ^= ExpandedKey[4 * round + i];
     }
 }
 
@@ -141,17 +147,18 @@ void encrypt(uint32_t * State, uint32_t * Key)
 {
     // Expand key
     uint32_t ExpandedKey[4 * (ROUNDS + 1)];
-    ExpandKey(Key, ExpandedKey, ROUNDS);
+    ExpandKey(Key, ExpandedKey, ROUNDS + 1);
 
+    AddRoundKey(State, ExpandedKey, 0);
     // Expand key
-    for (uint8_t i = 0; i < ROUNDS - 1; i++)
+    for (uint8_t i = 1; i < ROUNDS; i++)
     {
         SubBytes(State);
         ShiftRows(State);
         MixColumns(State);
-        AddRoundKey(State, ExpandedKey);
+        AddRoundKey(State, ExpandedKey, i);
     }
     SubBytes(State);
     ShiftRows(State);
-    AddRoundKey(State, ExpandedKey);
+    AddRoundKey(State, ExpandedKey, ROUNDS);
 }

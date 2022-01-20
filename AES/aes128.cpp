@@ -52,6 +52,16 @@ uint8_t SubByte(uint8_t word)
     return sbox[word & 0xFF];
 }
 
+inline uint32_t SubByteRow(uint32_t word)
+{
+    uint8_t * tmp = (uint8_t *) &word;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        tmp[i] = SubByte(tmp[i]);
+    }
+    return word;
+}
+
 inline void SubBytes(uint32_t *grid)
 {
     uint8_t * tmp = (uint8_t *) grid;
@@ -91,46 +101,33 @@ inline void MixColumns(uint32_t *state)
     }
 }
 
+uint32_t Rcon(int n)
+{
+  uint8_t c = 1;
+  for (uint8_t i = 0; i < n - 1; i++)
+  {
+    c = (c << 1) ^ (((c >> 7) & 1) * 0x1b);
+  }
+  return c << 24;
+}
+
 void ExpandKey(uint32_t *key, uint32_t *expandedkey, uint8_t nr_rounds)
 {
-    // for (uint8_t j = 0; j < 4; j++)
-    // {
-    //     expandedkey[j] = key[j];
-    // }
-    // for (uint32_t r = 4; r < 4 * nr_rounds; r++)
-    // {
-    //     if (r % 4 == 0){
-            
-    //     }
-    //     else
-    //     {
-    //         expandedkey[r] = expandedkey[r - 1] ^ expandedkey[r - 4];
-    //     }
-    //     one = expandedkey[r-4];
-    //     two = expandedkey[((r-4) & 0xFC) + ((r + 1) & 0x3)];
-    //     sboxval = sbox[two & 0xFF];
-    //     if (r % 4 == 0)
-    //     {
-    //         b0 = expandedkey[r-4] >> 24 ^ sbox[expandedkey[r-3] & 0xFF] ^ (r / 4);
-    //     }
-    //     else
-    //     {
-    //         b0 = one >> 24 ^ sbox[two & 0xFF];
-    //     }
-    //     b1 = one >> 16 ^ b0 & 0xFF;
-    //     b2 = one >>  8 ^ b1 & 0xFF ;
-    //     b3 = one     ^ b2 & 0xFF;
-    //     expandedkey[r] = b0 << 24 ^ b1 << 16 ^ b2 << 8 ^ b3;
-    //     std::cout << "j " << r \
-    //               << ": one " << one\
-    //               << ", two " << two\
-    //               << ", sbox " << sboxval\
-    //               << ", b0 " << b0\
-    //               << ", b1 " << b1\
-    //               << ", b2 " << b2\
-    //               << ", b3 " << b3\
-    //               << ", expk[j] "<< expandedkey[r] << std::endl;
-    // }
+    for (uint8_t j = 0; j < 4; j++)
+    {
+        expandedkey[j] = key[j];
+    }
+    for (uint32_t r = 4; r < 4 * nr_rounds; r++)
+    {
+        expandedkey[r] = expandedkey[r - 4];
+        if (r % 4 == 0){
+            expandedkey[r] ^= SubByteRow(cylesh32_8(expandedkey[r-1])) ^ Rcon(r/4);
+        }
+        else
+        {
+            expandedkey[r] ^= expandedkey[r-1];
+        }
+    }
 }
 
 inline void AddRoundKey(uint32_t *State, uint32_t* ExpandedKey)

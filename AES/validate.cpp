@@ -2,14 +2,13 @@
 #include <iostream>
 #include <iomanip>
 
-bool TestKeyExpansion()
+void TestKeyExpansion()
 {
     uint32_t key[4] = {
         0x00000000,
         0x00000000,
         0x00000000,
-        0x00000000
-    };
+        0x00000000};
     uint32_t expected[44] = {
         0x00000000, 0x00000000,
         0x00000000, 0x00000000,
@@ -32,8 +31,7 @@ bool TestKeyExpansion()
         0xB1D4D8E2, 0x8A7DB9DA,
         0x1D7BB3DE, 0x4C664941,
         0xB4EF5BCB, 0x3E92E211,
-        0x23E951CF, 0x6F8F188E
-    };
+        0x23E951CF, 0x6F8F188E};
 
     uint32_t expanded[44];
     ExpandKey(key, expanded, 11);
@@ -48,44 +46,41 @@ bool TestKeyExpansion()
     if (correct)
     {
         std::cout << "CORRECT" << std::endl;
-        return true;
     }
-
-    // Print result
-    std::cout << "INCORRECT" << std::endl;
-    std::cout << "computed | expected " << std::endl;
-    for (uint32_t i = 0; i < 44; i++)
+    else
     {
-        std::cout << std::dec << std::setw(2) << std::setfill(' ') << i << ": ";
-        std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0') << expanded[i];
-        std::cout << " | ";
-        std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0') << expected[i];
-        std::cout << std::endl;
+        // Print result
+        std::cout << "INCORRECT" << std::endl;
+        std::cout << "computed | expected " << std::endl;
+        for (uint32_t i = 0; i < 44; i++)
+        {
+            std::cout << std::dec << std::setw(2) << std::setfill(' ') << i << ": ";
+            std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0') << expanded[i];
+            std::cout << " | ";
+            std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0') << expected[i];
+            std::cout << std::endl;
+        }
     }
-    return false;
 }
 
-bool TestEncryption()
+void TestEncryption()
 {
     // Test vector
     uint32_t key[4] = {
         0x2b7e1516,
         0x28aed2a6,
         0xabf71588,
-        0x09cf4f3c
-    };
+        0x09cf4f3c};
     uint32_t pt[4] = {
         0x3243f6a8,
         0x885a308d,
         0x313198a2,
-        0xe0370734
-    };
+        0xe0370734};
     uint32_t ct[4] = {
         0x3925841d,
         0x02dc09fb,
         0xdc118597,
-        0x196a0b32
-    };
+        0x196a0b32};
 
     // Encrypt
     encrypt(pt, key);
@@ -116,12 +111,73 @@ bool TestEncryption()
                   << ct[2] << ' '
                   << ct[3] << std::endl;
     }
-    return false;
+}
+
+void TestEncryptionV2()
+{
+    uint32_t pt[4] = {
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000};
+    uint32_t key[4] = {
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000};
+    uint32_t ct[4] = {
+        0x66E94BD4,
+        0xEF8A2C3B,
+        0x884CFA59,
+        0xCA342B2E};
+
+    encrypt(pt, key);
+
+    // Check correctness
+    bool correct = true;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        correct &= pt[i] == ct[i];
+    }
+
+    // Output result for verification
+    if (correct)
+    {
+        std::cout << "CORRECT" << std::endl;
+    }
+    else
+    {
+        std::cout << "INCORRECT" << std::endl;
+    }
+
+    ct[0] = 0xF795BD4A;
+    ct[1] = 0x52E29ED7;
+    ct[2] = 0x13D313FA;
+    ct[3] = 0x20E98DBC;
+
+    encrypt(pt, key);
+
+    correct = true;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        correct &= pt[i] == ct[i];
+    }
+
+    // Output result for verification
+    if (correct)
+    {
+        std::cout << "CORRECT" << std::endl;
+    }
+    else
+    {
+        std::cout << "INCORRECT" << std::endl;
+    }
 }
 
 int main()
 {
     TestKeyExpansion();
     TestEncryption();
+    TestEncryptionV2();
     return 0;
 }

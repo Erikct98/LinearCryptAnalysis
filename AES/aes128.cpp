@@ -147,7 +147,7 @@ void encrypt(uint32_t * State, uint32_t * ExpandedKey, uint32_t nr_rounds)
 {
     // Add initial round key
     AddRoundKey(State, ExpandedKey, 0);
-    for (uint8_t i = 1; i < ROUNDS; i++)
+    for (uint8_t i = 1; i < nr_rounds; i++)
     {
         SubBytes(State);
         ShiftRows(State);
@@ -156,5 +156,5 @@ void encrypt(uint32_t * State, uint32_t * ExpandedKey, uint32_t nr_rounds)
     }
     SubBytes(State);
     ShiftRows(State);
-    AddRoundKey(State, ExpandedKey, ROUNDS);
+    AddRoundKey(State, ExpandedKey, nr_rounds);
 }

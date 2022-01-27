@@ -143,14 +143,10 @@ inline void AddRoundKey(uint32_t *State, uint32_t* ExpandedKey, uint8_t round)
     }
 }
 
-void encrypt(uint32_t * State, uint32_t * Key)
+void encrypt(uint32_t * State, uint32_t * ExpandedKey, uint32_t nr_rounds)
 {
-    // Expand key
-    uint32_t ExpandedKey[4 * (ROUNDS + 1)];
-    ExpandKey(Key, ExpandedKey, ROUNDS + 1);
-
+    // Add initial round key
     AddRoundKey(State, ExpandedKey, 0);
-    // Expand key
     for (uint8_t i = 1; i < ROUNDS; i++)
     {
         SubBytes(State);

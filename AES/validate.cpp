@@ -2,6 +2,8 @@
 #include <iostream>
 #include <iomanip>
 
+#define ROUNDS 10
+
 void TestKeyExpansion()
 {
     uint32_t key[4] = {
@@ -82,8 +84,12 @@ void TestEncryption()
         0xdc118597,
         0x196a0b32};
 
+    // Expand key
+    uint32_t ExpandedKey[4 * (ROUNDS + 1)];
+    ExpandKey(key, ExpandedKey, ROUNDS + 1);
+
     // Encrypt
-    encrypt(pt, key);
+    encrypt(pt, ExpandedKey, ROUNDS);
 
     // Check correctness
     bool correct = true;
@@ -131,7 +137,11 @@ void TestEncryptionV2()
         0x884CFA59,
         0xCA342B2E};
 
-    encrypt(pt, key);
+    // Expand key
+    uint32_t ExpandedKey[4 * (ROUNDS + 1)];
+    ExpandKey(key, ExpandedKey, ROUNDS + 1);
+
+    encrypt(pt, ExpandedKey, ROUNDS);
 
     // Check correctness
     bool correct = true;
@@ -155,7 +165,7 @@ void TestEncryptionV2()
     ct[2] = 0x13D313FA;
     ct[3] = 0x20E98DBC;
 
-    encrypt(pt, key);
+    encrypt(pt, ExpandedKey, ROUNDS);
 
     correct = true;
     for (uint8_t i = 0; i < 4; i++)

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "chrono"
+#include <random>
 
 // CYclic LEft SHift uint32_t's by X bits
 #define sw8cylesh32_1(word) (((word & 0x7F7F7F7F) << 1 ^ (word & 0x80808080) >> 7))
@@ -95,8 +96,23 @@ inline uint8_t J(int8_t x)
     return (1 - x) >> 1;
 }
 
+// Randomization
+std::mt19937 mt(time(0));
+std::uniform_int_distribution<uint32_t> randuint32(0, 0xFFFFFFFF);
+std::uniform_int_distribution<uint64_t> randuint64(0, 0xFFFFFFFFFFFFFFFF);
+
+uint32_t rand_uint32()
+{
+    return randuint32(mt);
+}
+
 void trailOneRound()
 {
+    uint32_t key = 0x0;
+    std::cout << "key: " << key << std::endl;
+
+    uint8_t processors = 4;
+    uint64_t factor = 0x100000000 / processors;
     uint32_t IPM = 0x01000000; // mask after sbox
     uint32_t OPM = 0xE0A16121;
     uint32_t ct, xt;
@@ -107,9 +123,7 @@ void trailOneRound()
     {
         sum += coeffs[j];
     }
-    std::cout << sum << std::endl;
     uint16_t term = (1 - (sum >> 7)) >> 1;
-    std::cout << term << std::endl;
 
     int32_t linearized;
     uint64_t counts[4];
@@ -119,14 +133,12 @@ void trailOneRound()
     }
 
     auto start = std::chrono::high_resolution_clock::now();
-
-    uint64_t factor = 0x40000000;
     #pragma omp parallel for
-    for (uint16_t j = 0; j < 4; j++)
+    for (uint16_t j = 0; j < processors; j++)
     {
         for (uint64_t pt = j * factor; pt < (j + 1) * factor; pt += 0x1)
         {
-            ct = MixColumn(SubBytes(pt));
+            ct = MixColumn(SubBytes(pt ^ key));
 
             linearized = 0;
             sect = pt >> 24;
@@ -147,6 +159,13 @@ void trailOneRound()
                  counts[1] << " " <<
                  counts[2] << " " <<
                  counts[3] << std::endl;
+
+    uint64_t count = 0;
+    for (uint16_t j = 0; j < 4; j++)
+    {
+        count += counts[j];
+    }
+    std::cout << count << "/" << 0x100000000 << std::endl;
 
     // pt = 0x0B0E090D;
     // std::cout << std::hex << pt << " " << ct << std::endl;

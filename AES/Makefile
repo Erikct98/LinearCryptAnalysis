@@ -32,9 +32,9 @@ trailMixColumn: _toolbox
 	${CC} -c -o ${OBJTRAILMC} trailMixColumn.cpp ${CFLAGS}
 	${CC} -o ${EXETRAILMC} ${OBJTRAILMC} ${OBJTOOLBOX} ${CFLAGS}
 
-trailOneRound:
+trailOneRound: _toolbox
 	${CC} -c -o ${OBJTRAILONE} trailOneRound.cpp ${CFLAGS} ${PARFLAGS}
-	${CC} -o ${EXETRAILONE} ${OBJTRAILONE} ${CFLAGS} ${PARFLAGS}
+	${CC} -o ${EXETRAILONE} ${OBJTRAILONE} ${OBJTOOLBOX} ${CFLAGS} ${PARFLAGS}
 
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \

@@ -7,6 +7,7 @@ OBJVALIDATE			= validate.o
 OBJLINSBOX			= linearizedsbox.o
 OBJTRAILMC			= trailmc.o
 OBJTRAILONE			= trailone.o
+OBJTOOLBOX			= toolbox.o
 
 EXEVALIDATE			= validate.exe
 EXELINSBOX			= linearizedsbox.exe
@@ -16,24 +17,28 @@ EXETRAILONE			= trailone.exe
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
 
-validate: _aes
+_toolbox:
+	${CC} -c -o ${OBJTOOLBOX} toolbox.cpp ${CFLAGS}
+
+validate: _aes _toolbox
 	${CC} -c -o ${OBJVALIDATE} validate.cpp ${CFLAGS}
-	${CC} -o ${EXEVALIDATE} ${OBJVALIDATE} ${OBJAES} ${CFLAGS}
+	${CC} -o ${EXEVALIDATE} ${OBJVALIDATE} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
 
-linearizedsbox: _aes
+linearizedsbox: _toolbox
 	${CC} -c -o ${OBJLINSBOX} linearizedTrailSbox.cpp ${CFLAGS}
-	${CC} -o ${EXELINSBOX} ${OBJLINSBOX} ${OBJAES} ${CFLAGS}
+	${CC} -o ${EXELINSBOX} ${OBJLINSBOX} ${OBJTOOLBOX} ${CFLAGS}
 
-trailMixColumn:
+trailMixColumn: _toolbox
 	${CC} -c -o ${OBJTRAILMC} trailMixColumn.cpp ${CFLAGS}
-	${CC} -o ${EXETRAILMC} ${OBJTRAILMC} ${CFLAGS}
+	${CC} -o ${EXETRAILMC} ${OBJTRAILMC} ${OBJTOOLBOX} ${CFLAGS}
 
 trailOneRound:
 	${CC} -c -o ${OBJTRAILONE} trailOneRound.cpp ${CFLAGS} ${PARFLAGS}
 	${CC} -o ${EXETRAILONE} ${OBJTRAILONE} ${CFLAGS} ${PARFLAGS}
 
 clean:
-	rm -f ${OBJAES} ${OBJLINSBOX} ${EXELINSBOX} \
+	rm -f ${OBJAES} ${OBJTOOLBOX} \
+	${OBJLINSBOX} ${EXELINSBOX} \
 	${OBJVALIDATE} ${EXEVALIDATE} \
 	${OBJTRAILMC} ${EXETRAILMC} \
 	${OBJTRAILONE} ${EXETRAILONE}

@@ -1,4 +1,4 @@
-#include "aes.h"
+#include "toolbox.h"
 
 int I(uint8_t x)
 {
@@ -13,13 +13,6 @@ uint8_t J(int x)
 uint8_t F(uint8_t x, uint8_t i)
 {
     return x >> i & 0x1;
-}
-
-inline uint8_t getParity(uint8_t v)
-{
-    v ^= v >> 4;
-    v &= 0xF;
-    return (0x6996 >> v) & 0x1;
 }
 
 bool approx_74_with_5(uint8_t word)
@@ -170,7 +163,7 @@ void linearize_sbox_output_74_with_5_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_74_with_5(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 74 - 5 TERMS ---" << std::endl;
@@ -186,7 +179,7 @@ void linearize_sbox_output_7A_with_1_term()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_7A_with_1(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 1 TERM ---" << std::endl;
@@ -202,7 +195,7 @@ void linearize_sbox_output_7A_with_5_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_7A_with_5(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 5 TERMS ---" << std::endl;
@@ -218,7 +211,7 @@ void linearize_sbox_output_7A_with_10_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_7A_with_10(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 10 TERMS ---" << std::endl;
@@ -235,7 +228,7 @@ void linearize_sbox_output_7A_with_20_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_7A_with_20(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 20 TERMS ---" << std::endl;
@@ -252,7 +245,7 @@ void linearize_sbox_output_74_with_21_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_74_with_21(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 74 - 21 TERMS ---" << std::endl;
@@ -268,7 +261,7 @@ void linearize_sbox_output_7A_with_50_terms()
     int linearized;
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
-        ct = SubByte(pt);
+        ct = SubByteByte(pt);
         count += (approx_7A_with_50(pt) ^ getParity(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 50 TERMS ---" << std::endl;

@@ -88,7 +88,7 @@ inline void ShiftRows(uint32_t *grid)
 inline uint32_t mulp2(uint32_t a)
 {
     uint32_t x = sw8cylesh32_1(a);
-    return (x & 0xFEFEFEFE) ^ ((x & 0x01010101) * 0x1B);
+    return x ^ ((x & 0x01010101) * 0x1A);
 }
 
 inline void MixColumns(uint32_t *state)
@@ -97,7 +97,7 @@ inline void MixColumns(uint32_t *state)
     for (uint8_t i = 0; i < 4; i++)
     {
         tmp[i] = mulp2(state[i]);
-        tmp[i] ^= mulp2(cylesh32_8(state[i])) ^ cylesh32_8(state[i]);
+        tmp[i] ^= cylesh32_8(tmp[i]) ^ cylesh32_8(state[i]);
         tmp[i] ^= cylesh32_16(state[i]);
         tmp[i] ^= cylesh32_24(state[i]);
     }

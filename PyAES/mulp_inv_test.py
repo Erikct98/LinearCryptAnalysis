@@ -1,8 +1,6 @@
-from collections import Counter
 from typing import List
+from .toolbox import I, F, P8, GF2_8
 
-
-GF2_8 = range(0, 256)
 REDUCTOR = 283
 
 
@@ -48,16 +46,11 @@ def get_sbox_LUT():
         mapping[i] = transform(get_inverse(i))
     return mapping
 
-def get_parity(x):
-    x ^= x >> 4
-    x ^= x >> 2
-    return (x ^ x >> 1) & 1
-
 def compute_LAT(LUT):
     LAT = [[128]*256 for i in range(256)]
     for ipm in GF2_8:
         for opm in GF2_8:
-            LAT[ipm][opm] -= sum(get_parity(ipm & pt ^ opm & LUT[pt]) for pt in GF2_8)
+            LAT[ipm][opm] -= sum(P8(ipm & pt ^ opm & LUT[pt]) for pt in GF2_8)
     return LAT
 
 def print_LAT_table(table, indent=4):
@@ -107,11 +100,7 @@ def print_counters():
 
 # print(get_bit_count(0))
 
-def I(x):
-    return 1-(x << 1)
 
-def F(x, i):
-    return (x >> i) & 0x1
 
 def find_best_orientation():
     sbox = get_sbox_LUT()
@@ -121,7 +110,7 @@ def find_best_orientation():
         countmap = {}
         i1, i2, i3, i4, i5 = I(F(a, 0)), I(F(a, 1)), I(F(a, 2)), I(F(a, 3)), I(F(a, 5))
         for i in range(256):
-            out_parity = get_parity(sbox[i] & OPM)
+            out_parity = P8(sbox[i] & OPM)
 
             val = (i1* I(F(i, 1) ^ F(i, 2)) \
                 + i2 * I(F(i, 1) ^ F(i, 2) ^ F(i, 4) ^ F(i, 7))\
@@ -153,12 +142,11 @@ def compute_correlation():
         a3 = I(F(pt, 1) ^ F(pt, 4))
         a4 = I(F(pt, 1) ^ F(pt, 7))
         a5 = I(F(pt, 2) ^ F(pt, 4))
-        in_par = a1 + a2 + a3 + a4 + 2 * a5
-        print(f'{a1=: 2}, {a2=: 2}, {a3=: 2}, {a4=: 2}, {a5=: 2}, {in_par=:2}')
-        out_par = get_parity(sbox[pt] & OPM)
+        in_par = a1 + a2 + a3 + a4 + a5
+        # print(f'{a1=: 2}, {a2=: 2}, {a3=: 2}, {a4=: 2}, {a5=: 2}, {in_par=:2}')
+        out_par = P8(sbox[pt] & OPM)
         count += (in_par >= 0) ^ out_par
-    return 2 * (count / 256) - 1
-
+    return (2 * (count / 256) - 1, count)
 
 def compute_correlation_v2():
     sbox = get_sbox_LUT()
@@ -190,11 +178,11 @@ def compute_correlation_v2():
         ]
 
         in_par = sum(x)
-        out_par = get_parity(sbox[pt] & OPM)
+        out_par = P8(sbox[pt] & OPM)
         count += (in_par >= 0) ^ out_par
     return 2 * (count / 256) - 1
 
 # print(compute_correlation_v2())
-sbox = get_sbox_LUT()
-for i in range(256):
-    print(f"0x{sbox[i]:02X}")
+# sbox = get_sbox_LUT()
+# for i in range(256):
+#     print(f"0x{sbox[i]:02X}")

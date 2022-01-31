@@ -1,5 +1,4 @@
-from linearization_finder import F, GF2_8, I, P
-
+from toolbox import GF2_8
 from LAT import LAT
 
 def find_interesting_and_combination(opm):

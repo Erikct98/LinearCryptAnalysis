@@ -1,4 +1,3 @@
-
 class Byyte:
     def __init__(self, symbols=None):
         if symbols is None:

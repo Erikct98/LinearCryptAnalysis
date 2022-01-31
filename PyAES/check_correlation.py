@@ -1,12 +1,11 @@
-from linearization_finder import GF2_8, P, I, J, sbox
+from toolbox import P8, sbox, GF2_8
 
-GF2_8 = range(256)
 
 def check_correlation(ipm, opm):
     count = 0
     for pt in GF2_8:
-        in_parity = P(pt & ipm)
-        output_parity = P(sbox[pt] & opm)
+        in_parity = P8(pt & ipm)
+        output_parity = P8(sbox[pt] & opm)
         count += in_parity ^ output_parity
     return 128 - count
 

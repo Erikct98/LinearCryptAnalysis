@@ -2,9 +2,10 @@
 #include "aes.h"
 #include "toolbox.h"
 #include "chrono"
+#include <random>
 #include <numeric>
 
-void trailOneRound()
+void trailTwoRounds()
 {
     // Parallelization settings
     uint8_t nr_threads = 4;
@@ -18,10 +19,10 @@ void trailOneRound()
         0x00000000,
         0x00000000};
     const uint32_t OPM[4] = {
-        0xE0A16121,
-        0x00000000,
-        0x00000000,
-        0x00000000};
+        0x5CF46CE4,
+        0x9273D3B1,
+        0xADF95750,
+        0x702F4F6F};
     const int8_t COEFFS[256] = {
         0, 12, 2, 6, -8, 8, 6, -10, 2, -10, -4, 0, -6, -14, 8, 8, -12, 0, -10,
         2, 12, 4, 2, 2, 14, -14, -8, -12, 6, -10, -4, -4, 6, 2, 8, 12, -2, -2,
@@ -53,41 +54,42 @@ void trailOneRound()
 
         // Variables
         int32_t linearized;
-        uint64_t corr = factor >> 1;
         uint16_t sect, in_parity, out_parity;
-        uint32_t pt[4], _pt[4];
+        uint32_t pt[4], pt2[4];
         for (uint16_t i = 0; i < 4; i++)
         {
-            _pt[i] = rand_uint32();
+            pt2[i] = rand_uint32();
         }
 
         // Count
         for (uint64_t i = 0; i < factor; i++)
         {
             // Create plaintext
-            _pt[0] += 983;
-            _pt[1] += 939391;
-            _pt[2] += 39916801;
-            _pt[3] += 1301476963;
+            pt2[0] += 983;
+            pt2[1] += 939391;
+            pt2[2] += 39916801;
+            pt2[3] += 1301476963;
 
-            pt[0] = _pt[0];
-            pt[1] = _pt[1];
-            pt[2] = _pt[2];
-            pt[3] = _pt[3];
+            pt[0] = pt2[0];
+            pt[1] = pt2[1];
+            pt[2] = pt2[2];
+            pt[3] = pt2[3];
 
-            // Analyse plaintext for 1 rounds
+            // Analyse plaintext for 2 rounds
             linearized = 0;
             sect = pt[0] >> 24;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
                 linearized += COEFFS[ipm] * getParity(sect & ipm);
             }
-            in_parity = (offset + (linearized >> 7)) & 1;
 
             // Encrypt
-            SubBytes(pt);
-            ShiftRows(pt);
-            MixColumns(pt);
+            for (uint8_t i = 0; i < 2; i++)
+            {
+                SubBytes(pt);
+                ShiftRows(pt);
+                MixColumns(pt);
+            }
             out_parity = getParity(pt[0] & OPM[0] ^ pt[1] & OPM[1] ^ pt[2] & OPM[2] ^ pt[3] & OPM[3]);
 
             counts[t] += in_parity ^ out_parity;
@@ -103,6 +105,6 @@ void trailOneRound()
 
 int main()
 {
-    trailOneRound();
+    trailTwoRounds();
     return 0;
 }

@@ -29,3 +29,5 @@ void MixColumns(uint32_t *state);
 void AddRoundKey(uint32_t *state, uint32_t *ExpandedKey, uint8_t round);
 
 void ExpandKey(uint32_t *key, uint32_t *expandedkey, uint8_t nr_rounds);
+
+uint32_t rand_uint32();

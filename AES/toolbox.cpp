@@ -1,5 +1,6 @@
 #include "toolbox.h"
 #include <iostream>
+#include <random>
 
 // Lookup table for sbox
 static const uint8_t sbox[256] = {
@@ -150,4 +151,14 @@ void ExpandKey(uint32_t *key, uint32_t *expandedkey, uint8_t nr_rounds)
             expandedkey[r] ^= expandedkey[r - 1];
         }
     }
+}
+
+// Randomization
+std::mt19937 mt(time(0));
+std::uniform_int_distribution<uint32_t> randuint32(0, 0xFFFFFFFF);
+std::uniform_int_distribution<uint64_t> randuint64(0, 0xFFFFFFFFFFFFFFFF);
+
+uint32_t rand_uint32()
+{
+    return randuint32(mt);
 }

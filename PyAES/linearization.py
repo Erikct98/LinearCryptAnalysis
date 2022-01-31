@@ -11,7 +11,7 @@ def keyed_linearization_for_ipm(ipm: int, ipkey: int = 0) -> LinearFunction:
     Through: xor with `key` and SubBytes step.
     """
     coeffs = [I(P8(ipkey & opm)) * LAT[ipm][opm] for opm in GF2_8]
-    offset = J(sum(coeffs) >> 8)
+    offset = (1 - (sum(coeffs) >> 7)) >> 1
 
     def _func(ct: int) -> int:
         linear = sum(coeffs[opm] * P8(ct & opm) for opm in GF2_8)
@@ -26,7 +26,7 @@ def keyed_linearization_for_opm(opm: int, opkey: int = 0) -> LinearFunction:
     Through: xor with `key` and SubBytes step.
     """
     coeffs = [I(P8(opkey & ipm)) * LAT[ipm][opm] for ipm in GF2_8]
-    offset = J(sum(coeffs) >> 8)
+    offset = (1 - (sum(coeffs) >> 7)) >> 1
 
     def _func(pt: int) -> int:
         linear = sum(coeffs[ipm] * P8(pt & ipm) for ipm in GF2_8)

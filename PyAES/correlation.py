@@ -10,7 +10,7 @@ from LAT import LAT
 
 def corr(ipm: int, opm: int) -> int:
     """
-    :returns: the correlation between the input mask `ipm` and output mask
+    :returns: 128 * correlation between the input mask `ipm` and output mask
     `opm` through the AES sbox
     """
     return LAT[ipm][opm]

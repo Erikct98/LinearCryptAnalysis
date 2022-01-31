@@ -1,10 +1,28 @@
+"""
+This library provides means to compute linear trails through the
+MixColumns step that hold with corr = 1.
+"""
+from typing import List, Tuple
+
+
+Symbols = List[List[Tuple(int, int)]]
+
+
 class Byyte:
-    def __init__(self, symbols=None):
+    """
+    Symbolic representation of a byte. Used in generating linear trails
+    through the MixColumn step.
+    """
+
+    def __init__(self, symbols: Symbols = None):
         if symbols is None:
             symbols = [[] for _ in range(8)]
         self.symbols = symbols
 
-    def mulp(self, s: int):
+    def sm(self, s: int):
+        """
+        Return `s` * self.
+        """
         copy = self.clone()
 
         res = Byyte(None)
@@ -30,11 +48,21 @@ class Byyte:
             self.symbols[i].extend(o.symbols[i])
         return self
 
-        # Clean
-        # TODO
+    @classmethod
+    def sum(cls, os: List['Byyte']) -> 'Byyte':
+        """
+        Sum multiple Byyte objects
+        """
+        res = os[0].clone()
+        for o in os[1:]:
+            res.add(o)
+        return res
 
     @classmethod
-    def concat(cls, os: 'Byyte') -> 'Byyte':
+    def concat(cls, os: List['Byyte']) -> 'Byyte':
+        """
+        Concatenate Byyte objects.
+        """
         clones = [x.clone() for x in os]
         for i in clones[1:]:
             clones[0].symbols.extend(i.symbols)
@@ -43,16 +71,31 @@ class Byyte:
     def __repr__(self):
         return f"<class 'Byytes', symbols={repr(self.symbols)}>"
 
-def fwd_map() :
-    ip = [Byyte([[(id_, i)] for i in range(7, -1, -1)]) for id_ in range(4)]
-    return Byyte.concat([ip[i].mulp(2).add(ip[(i + 1) % 4].mulp(3)).add(ip[(i + 2) % 4]).add(ip[(i + 3) % 4]) for i in range(4)])
 
-def bwd_map():
+def bwd_map() -> Byyte:
+    """
+    Computes the linear trail in the backward direction.
+    I.e. every input bit is given as linear combination of output bits.
+    """
     ip = [Byyte([[(id_, i)] for i in range(7, -1, -1)]) for id_ in range(4)]
-    return Byyte.concat([ip[i].mulp(14).add(ip[(i + 1) % 4].mulp(11)).add(ip[(i + 2) % 4].mulp(13)).add(ip[(i + 3) % 4].mulp(9)) for i in range(4)])
+    return Byyte.concat([Byyte.sum([ip[i].sm(2), ip[(i + 1) % 4].sm(3), ip[(i + 2) % 4],ip[(i + 3) % 4]]) for i in range(4)])
 
-def find_input_mask(opm):
-    byytes = fwd_map()
+
+def fwd_map() -> Byyte:
+    """
+    Computes the linear trail in the forward direction.
+    I.e. every output bit is given as linear combination of input bits.
+    """
+    ip = [Byyte([[(id_, i)] for i in range(7, -1, -1)]) for id_ in range(4)]
+    return Byyte.concat([ip[i].sm(14).add(ip[(i + 1) % 4].sm(11)).add(ip[(i + 2) % 4].sm(13)).add(ip[(i + 3) % 4].sm(9)) for i in range(4)])
+
+
+def find_input_mask(opm: int) -> int:
+    """
+    Compute input mask corresponding that has correlation 1 with `opm`
+    through MixColumns.
+    """
+    byytes = bwd_map()
     indices = [idx for idx, elt in enumerate(f'{opm:0>32b}') if elt == "1"]
     symbs = [x for idx in indices for x in byytes.symbols[idx]]
     ipm = 0
@@ -60,14 +103,20 @@ def find_input_mask(opm):
         ipm ^= 1 << ((3-word) * 8 + idx)
     return ipm
 
-def find_output_mask(ipm):
-    byytes = bwd_map()
+
+def find_output_mask(ipm: int) -> int:
+    """
+    Compute output mask corresponding that has correlation 1 with `ipm`
+    through MixColumns.
+    """
+    byytes = fwd_map()
     indices = [idx for idx, elt in enumerate(f'{ipm:0>32b}') if elt == "1"]
     symbs = [x for idx in indices for x in byytes.symbols[idx]]
     opm = 0
     for word, idx in symbs:
         opm ^= 1 << ((3-word) * 8 + idx)
     return opm
+
 
 if __name__ == "__main__":
     assert find_input_mask(0x80000000) == 0x40C08080

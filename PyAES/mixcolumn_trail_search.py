@@ -5,7 +5,7 @@ MixColumns step that hold with corr = 1.
 from typing import List, Tuple
 
 
-Symbols = List[List[Tuple(int, int)]]
+Symbols = List[List[Tuple[int, int]]]
 
 
 class Byyte:
@@ -78,7 +78,7 @@ def bwd_map() -> Byyte:
     I.e. every input bit is given as linear combination of output bits.
     """
     ip = [Byyte([[(id_, i)] for i in range(7, -1, -1)]) for id_ in range(4)]
-    return Byyte.concat([Byyte.sum([ip[i].sm(2), ip[(i + 1) % 4].sm(3), ip[(i + 2) % 4],ip[(i + 3) % 4]]) for i in range(4)])
+    return Byyte.concat([Byyte.sum([ip[i].sm(2), ip[(i + 1) % 4].sm(3), ip[(i + 2) % 4], ip[(i + 3) % 4]]) for i in range(4)])
 
 
 def fwd_map() -> Byyte:
@@ -87,7 +87,7 @@ def fwd_map() -> Byyte:
     I.e. every output bit is given as linear combination of input bits.
     """
     ip = [Byyte([[(id_, i)] for i in range(7, -1, -1)]) for id_ in range(4)]
-    return Byyte.concat([ip[i].sm(14).add(ip[(i + 1) % 4].sm(11)).add(ip[(i + 2) % 4].sm(13)).add(ip[(i + 3) % 4].sm(9)) for i in range(4)])
+    return Byyte.concat([Byyte.sum([ip[i].sm(14), ip[(i + 1) % 4].sm(11), ip[(i + 2) % 4].sm(13), ip[(i + 3) % 4].sm(9)]) for i in range(4)])
 
 
 def find_input_mask(opm: int) -> int:

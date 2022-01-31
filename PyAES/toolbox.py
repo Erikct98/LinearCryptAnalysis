@@ -2,7 +2,7 @@
 This library provides a host of small functions that
 are useful in many situations.
 """
-from typing import Any, List
+from typing import Any, Iterable, List
 Table = List[List[Any]]
 
 GF2_8 = range(256)
@@ -47,7 +47,7 @@ def subbyte(x: int) -> int:
     """
     Apply subbyte transformation to 8-bit word `x`.
     """
-    return _subbytes(x)
+    return _subbytes[x]
 
 
 def I(x: int) -> int:

@@ -1,7 +1,13 @@
+"""
+This library provides a host of small functions that
+are useful in many situations.
+"""
+from typing import Any, List
+Table = List[List[Any]]
 
 GF2_8 = range(256)
 
-sbox = [
+_subbytes = [
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
     0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0,
@@ -36,11 +42,20 @@ sbox = [
     0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 ]
 
+
+def subbyte(x: int) -> int:
+    """
+    Apply subbyte transformation to 8-bit word `x`.
+    """
+    return _subbytes(x)
+
+
 def I(x: int) -> int:
     """
     Compute (-1)^x. Assumes x in {0,1}
     """
     return 1-(x << 1)
+
 
 def J(x):
     """
@@ -48,11 +63,13 @@ def J(x):
     """
     return (1 - x) >> 1
 
+
 def F(x: int, i: int) -> int:
     """
     Get `i`th bit of x, with `0`th bit being the LSB.
     """
     return (x >> i) & 0x1
+
 
 def P8(v: int) -> int:
     """
@@ -61,3 +78,35 @@ def P8(v: int) -> int:
     v ^= v >> 4
     v &= 0xF
     return (0x6996 >> v) & 0x1
+
+
+def bit_count(i: int) -> int:
+    """
+    Return the number of 1-bits in word `i`.
+    """
+    return f"{i:b}".count("1")
+
+
+def transpose(table: List[List[Any]]) -> List[List[Any]]:
+    """
+    Return the transpose of `table`.
+    """
+    return [[r[idx] for r in table] for idx, _ in enumerate(table)]
+
+
+def cylesh8(x: int, steps: int) -> int:
+    """
+    CYclic LEft SHift 8-bit word by `steps` bits.
+    """
+    return (x << steps ^ x >> 8 - steps) & 0xFF
+
+
+def export_table(table: Table, fname: str) -> None:
+    """
+    Write a fancy representation of `table` to file with name `fname`.
+    """
+    with open(fname, 'w') as fp:
+        fp.write(f'    {" ".join(f"{x:4X}" for x, _ in enumerate(table[0]))} ')
+        fp.write('-' * (5 * len(table) + 3))
+        for idx, row in enumerate(table):
+            print(f'{idx:02X} [{",".join(f"{x:4}" for x in row)}]')

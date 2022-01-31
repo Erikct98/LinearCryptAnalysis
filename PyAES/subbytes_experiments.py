@@ -1,4 +1,3 @@
-from subbytes import compute_AES_subbytes
 from toolbox import GF2_8, P8, I, F, subbyte
 
 
@@ -44,7 +43,7 @@ def compute_correlation():
     :returns: tuple with correlation and 256*prob.
     """
     OPM = 0x74
-    count = 0
+    count = 256
     for pt in GF2_8:
         a1 = I(F(pt, 1) ^ F(pt, 2))
         a2 = I(F(pt, 1) ^ F(pt, 2) ^ F(pt, 4) ^ F(pt, 7))
@@ -53,7 +52,7 @@ def compute_correlation():
         a5 = I(F(pt, 2) ^ F(pt, 4))
         in_par = a1 + a2 + a3 + a4 + a5
         out_par = P8(subbyte(pt) & OPM)
-        count += (in_par >= 0) ^ out_par
+        count -= (in_par >= 0) ^ out_par
     return (2 * (count / 256) - 1, count)
 
 
@@ -64,8 +63,8 @@ def compute_correlation_v2():
     :returns: tuple with correlation and 256*prob.
     """
     OPM = 0x74
-    count = 0
-    for pt in range(256):
+    count = 256
+    for pt in GF2_8:
         x = [
             I(F(pt, 0) ^ F(pt, 2)),
             I(F(pt, 0) ^ F(pt, 1) ^ F(pt, 2)),
@@ -92,5 +91,5 @@ def compute_correlation_v2():
 
         in_par = sum(x) >= 0
         out_par = P8(subbyte(pt) & OPM)
-        count += in_par ^ out_par
+        count -= in_par ^ out_par
     return (2 * (count / 256) - 1, count)

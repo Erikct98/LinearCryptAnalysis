@@ -101,8 +101,7 @@ void trailOneRound()
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "duration (mus): " << duration.count() << '\n' << '\n';
 
-    std::cout << "counts: " << counts[0] << " " << counts[1] << " " << counts[2] << " " << counts[3] << std::endl;
-    std::cout << "total: " << sample_size << std::endl;
+    printResults(counts, nr_threads, sample_size);
 }
 
 int main()

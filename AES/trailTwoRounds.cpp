@@ -23,6 +23,7 @@ void trailTwoRounds()
         0x9273D3B1,
         0xADF95750,
         0x702F4F6F};
+    // Coefficients corresponding with 0x1 as output mask
     const int8_t COEFFS[256] = {
         0, 12, 2, 6, -8, 8, 6, -10, 2, -10, -4, 0, -6, -14, 8, 8, -12, 0, -10,
         2, 12, 4, 2, 2, 14, -14, -8, -12, 6, -10, -4, -4, 6, 2, 8, 12, -2, -2,
@@ -103,8 +104,7 @@ void trailTwoRounds()
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "duration (mus): " << duration.count() << '\n' << '\n';
 
-    std::cout << "counts: " << counts[0] << " " << counts[1] << " " << counts[2] << " " << counts[3] << std::endl;
-    std::cout << "total: " << sample_size << std::endl;
+    printResults(counts, nr_threads, sample_size);
 }
 
 int main()

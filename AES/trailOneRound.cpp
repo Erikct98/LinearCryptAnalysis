@@ -44,6 +44,14 @@ void trailOneRound()
 
     uint64_t counts[nr_threads];
 
+    // Initialize plaintexts
+    uint32_t pt_[4 * nr_threads];
+    for (uint16_t i = 0; i < 4 * nr_threads; i++)
+    {
+        pt_[i] = rand_uint32();
+    }
+
+
     // Count
     auto start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for
@@ -55,20 +63,16 @@ void trailOneRound()
         int32_t linearized;
         uint64_t corr = factor >> 1;
         uint16_t sect, in_parity, out_parity;
-        uint32_t pt[4], _pt[4];
-        for (uint16_t i = 0; i < 4; i++)
-        {
-            _pt[i] = rand_uint32();
-        }
+        uint32_t pt[4], *_pt = &pt_[4 * t];
 
         // Count
         for (uint64_t i = 0; i < factor; i++)
         {
             // Create plaintext
-            _pt[0] += 983;
-            _pt[1] += 939391;
-            _pt[2] += 39916801;
-            _pt[3] += 1301476963;
+            _pt[0] += 1301476963;
+            _pt[1] += 39916801;
+            _pt[2] += 939391;
+            _pt[3] += 983;
 
             pt[0] = _pt[0];
             pt[1] = _pt[1];
@@ -82,7 +86,7 @@ void trailOneRound()
             {
                 linearized += COEFFS[ipm] * getParity(sect & ipm);
             }
-            in_parity = (offset + (linearized >> 7)) & 1;
+            in_parity = offset + (linearized >> 7);
 
             // Encrypt
             SubBytes(pt);

@@ -48,9 +48,9 @@ def func_corr(ipf: Callable, opf: Callable) -> int:
 def keyed_func_corr(ipf: Callable, opf: Callable, ipk: int, opk: int) -> List[int]:
     """
     Return correlation between input function `ipf` and output function `opf`
-    through `key`-XOR and SubBytes.
+    through `ipk`-XOR, SubBytes and `opk`-XOR.
     :param ipf: function on input side
-    :param opf: function at output side
+    :param opf: function on output side
     :param ipk: key at input side
     :param opk: key at output side
     :returns: 128*correlation

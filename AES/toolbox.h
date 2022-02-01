@@ -10,7 +10,8 @@
 #define cylesh32_16(word) (word << 16 ^ word >> 16)
 #define cylesh32_24(word) (word << 24 ^ word >> 8)
 
-uint32_t getParity(uint32_t v);
+// Compute parity of 32-bit word.
+uint32_t P32(uint32_t v);
 
 uint32_t mulp2(uint32_t a);
 

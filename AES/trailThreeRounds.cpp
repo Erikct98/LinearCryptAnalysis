@@ -86,7 +86,7 @@ void trailTwoRounds()
             sect = pt[0] >> 24 & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_I_0x91[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_I_0x91[ipm] * P32(sect & ipm);
             }
             in_parity ^= I_0x91_offset + (linearized >> 7);
 
@@ -95,7 +95,7 @@ void trailTwoRounds()
             sect = pt[1] >> 16 & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_I_0xB3[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_I_0xB3[ipm] * P32(sect & ipm);
             }
             in_parity ^= I_0xB3_offset + (linearized >> 7);
 
@@ -104,7 +104,7 @@ void trailTwoRounds()
             sect = pt[2] >> 8 & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_I_0x22[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_I_0x22[ipm] * P32(sect & ipm);
             }
             in_parity ^= I_0x22_offset + (linearized >> 7);
 
@@ -114,7 +114,7 @@ void trailTwoRounds()
             sect = pt[3] & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_I_0x22[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_I_0x22[ipm] * P32(sect & ipm);
             }
             in_parity ^= I_0x22_offset + (linearized >> 7);
 
@@ -137,7 +137,7 @@ void trailTwoRounds()
             sect = pt[0] >> 24;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_O_0x2E[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_O_0x2E[ipm] * P32(sect & ipm);
             }
             out_parity ^= O_0x2E_offset + (linearized >> 7);
 
@@ -146,7 +146,7 @@ void trailTwoRounds()
             sect = pt[3] >> 16 & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_O_0xFA[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_O_0xFA[ipm] * P32(sect & ipm);
             }
             out_parity ^= O_0xFA_offset + (linearized >> 7);
 
@@ -155,7 +155,7 @@ void trailTwoRounds()
             sect = pt[2] >> 8 & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_O_0xB6[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_O_0xB6[ipm] * P32(sect & ipm);
             }
             out_parity ^= O_0xB6_offset + (linearized >> 7);
 
@@ -164,7 +164,7 @@ void trailTwoRounds()
             sect = pt[1] & 0xFF;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS_O_0x72[ipm] * getParity(sect & ipm);
+                linearized += COEFFS_O_0x72[ipm] * P32(sect & ipm);
             }
             out_parity ^= O_0x72_offset + (linearized >> 7);
 

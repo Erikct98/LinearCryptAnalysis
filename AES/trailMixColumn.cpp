@@ -11,7 +11,7 @@ void trailMixColumn()
     for (uint64_t pt = 0; pt < 0x100000000; pt++)
     {
         ct = MixColumn(pt);
-        count += getParity(pt & IPM ^ ct & OPM);
+        count += P32(pt & IPM ^ ct & OPM);
     }
     std::cout << count << std::endl;
 }

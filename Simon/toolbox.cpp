@@ -34,7 +34,7 @@ void generateSubKeys(uint64_t key, uint16_t *subkeys, uint8_t rounds)
 }
 
 // Found on https://graphics.stanford.edu/~seander/bithacks.html
-uint32_t getParity(uint32_t v)
+uint32_t P32(uint32_t v)
 {
     v ^= v >> 16;
     v ^= v >> 8;

@@ -4,7 +4,7 @@
 void generateSubKeys(uint64_t key, uint16_t *subkeys, uint8_t rounds);
 
 // Computes parity of 32-bit word.
-uint32_t getParity(uint32_t v);
+uint32_t P32(uint32_t v);
 
 // Generate filename
 std::string generateFileName(std::string name, uint32_t inp_mask,

@@ -1,6 +1,7 @@
 #pragma once
 
-uint32_t getParity(uint32_t v)
+// Compute parity of 32-bit word.
+uint32_t P32(uint32_t v)
 {
     v ^= v >> 16;
     v ^= v >> 8;

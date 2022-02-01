@@ -117,7 +117,7 @@ uint64_t compute_correlation_linearized(uint64_t key)
             - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
         ) >> 3);
 
-        count += getParity(pt & IPM) ^ X0R2 ^ X0R14;
+        count += P32(pt & IPM) ^ X0R2 ^ X0R14;
     }
     return count;
 }
@@ -125,26 +125,26 @@ uint64_t compute_correlation_linearized(uint64_t key)
 uint64_t compute_correlation_non_linearized(uint64_t key)
 {
     // Constants
+    uint32_t OPM = 0x10004404;
     uint64_t count = 0;
     uint32_t pt, ct, X0R2, X0R14, xl, xr;
     uint16_t subkeys[ENC_ROUNDS];
     uint16_t k7;
-    uint16_t X6R12, X6R01, X6R10, X6R13, X6R06, X6L14, X6L02;
+    uint16_t X6R12, X6R01, X6R10, X6R13, X6R06;
     generateSubKeys(key, subkeys, ENC_ROUNDS);
     for (uint32_t i = 0; i < SAMPLE_SIZE; i++)
     {
         pt = rand_uint32();
         ct = encrypt(pt, subkeys, ENC_ROUNDS);
         k7 = subkeys[ENC_ROUNDS - 1];
-        X6R12 = F(ct, 28) ^ F(k7, 12) ^ F(ct, 10) ^ F(ct, 11) & F(ct,  4);
+        X6R12 = F(ct, 11) & F(ct,  4); // ^ F(k7, 12);
         X6R01 = F(ct, 17) ^ F(k7,  1) ^ F(ct, 15) ^ F(ct,  0) & F(ct,  9);  // X7L[ 1] + k7[ 1] + X7R[15] + X7R[ 0] * X7R[ 9]
         X6R10 = F(ct, 26) ^ F(k7, 10) ^ F(ct,  8) ^ F(ct,  9) & F(ct,  2);  // X7L[10] + k7[10] + X7R[ 8] + X7R[ 9] * X7R[ 2]
         X6R13 = F(ct, 29) ^ F(k7, 13) ^ F(ct, 11) ^ F(ct, 12) & F(ct,  5);  // X7L[13] + k7[13] + X7R[11] + X7R[12] * X7R[ 5]
         X6R06 = F(ct, 22) ^ F(k7,  6) ^ F(ct,  4) ^ F(ct,  5) & F(ct, 14);  // X7L[ 6] + k7[ 6] + X7R[ 4] + X7R[ 5] * X7R[14]
-        X6L14 = F(ct, 14);
-        X6L02 = F(ct,  2);
 
-        count += (getParity(pt & IPM) ^ (X6L02 ^ X6R01 & X6R10 ^ X6L14 ^ X6R12 ^ X6R13 & X6R06)) & 1;
+        count += (P32(pt & IPM) ^ (X6L02 ^ X6R01 & X6R10 ^ X6L14 ^ X6R12 ^ X6R13 & X6R06)) & 1;
+        count += P32(pt & IPM ^ ct & OPM) ^ X6R12 ^ X6R01 & X6R10 ^ X6R13 & X6R06;
     }
     return count;
 }
@@ -163,19 +163,56 @@ void writeToFile(uint64_t *results, uint32_t nr_trials, std::string fname)
     }
 }
 
-int main()
+void execute()
 {
-    std::srand(time(0));
     uint64_t results[NR_TESTS];
     uint64_t key;
     #pragma omp parallel for
     for (uint32_t i = 0; i < NR_TESTS; i ++)
     {
         key = rand_uint64();
-        results[i] = compute_correlation(key);
+        results[i] = compute_correlation_non_linearized(key);
     }
     std::string fname = generateFileName("results/LinearizedTrailTest", IPM, 0, SAMPLE_SIZE, NR_TESTS, ENC_ROUNDS);
     std::cout << fname << '\n';
     writeToFile(results, NR_TESTS, fname);
+}
+
+void speedtest()
+{
+    uint64_t results[NR_TESTS];
+    uint64_t key;
+
+    std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::_V2::system_clock::duration> ls, le, nls, nle;
+
+    ls = std::chrono::high_resolution_clock::now();
+    // for (uint32_t i = 0; i < NR_TESTS; i ++)
+    // {
+    //     key = rand_uint64();
+    //     results[i] = compute_correlation_linearized(key);
+    // }
+    le = std::chrono::high_resolution_clock::now();
+
+    nls = std::chrono::high_resolution_clock::now();
+    for (uint32_t i = 0; i < NR_TESTS; i ++)
+    {
+        key = rand_uint64();
+        results[i] = compute_correlation_non_linearized(key);
+    }
+    nle = std::chrono::high_resolution_clock::now();
+
+    // Print results to console
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(le - ls);
+    std::cout << "L   duration (mus): " << duration.count() << '\n';
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(nle - nls);
+    std::cout << "NL  duration (mus): " << duration.count() << '\n';
+}
+
+int main()
+{
+    std::srand(time(0));
+    speedtest();
+    // execute();
+
     return 0;
 }

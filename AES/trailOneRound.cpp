@@ -84,7 +84,7 @@ void trailOneRound()
             sect = pt[0] >> 24;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS[ipm] * getParity(sect & ipm);
+                linearized += COEFFS[ipm] * P32(sect & ipm);
             }
             in_parity = offset + (linearized >> 7);
 
@@ -92,7 +92,7 @@ void trailOneRound()
             SubBytes(pt);
             ShiftRows(pt);
             MixColumns(pt);
-            out_parity = getParity(pt[0] & OPM[0] ^ pt[1] & OPM[1] ^ pt[2] & OPM[2] ^ pt[3] & OPM[3]);
+            out_parity = P32(pt[0] & OPM[0] ^ pt[1] & OPM[1] ^ pt[2] & OPM[2] ^ pt[3] & OPM[3]);
 
             counts[t] += in_parity ^ out_parity;
         }

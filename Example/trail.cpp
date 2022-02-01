@@ -47,7 +47,7 @@ uint32_t count(uint32_t *key, uint32_t *constants, uint32_t sample_size)
         parity = 0;
         for (uint8_t i = 0; i < 4; i++)
         {
-            parity ^= getParity(word[i] & IPM[i]);
+            parity ^= P32(word[i] & IPM[i]);
         }
 
         // Encrypt
@@ -56,11 +56,11 @@ uint32_t count(uint32_t *key, uint32_t *constants, uint32_t sample_size)
         // XOR parity output
         for (uint8_t i = 0; i < 4; i++)
         {
-            parity ^= getParity(word[i] & OPM[i]);
+            parity ^= P32(word[i] & OPM[i]);
         }
 
         // Analyse
-        count -= parity;
+        count -= P32(val);
     }
 
     return count;

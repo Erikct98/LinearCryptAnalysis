@@ -53,7 +53,7 @@ uint32_t linearizeParity1()
     for (uint32_t i = 0; i < NR_ITERATIONS; i++)
     {
         pt = rand_uint32();
-        in_parity = getParity(pt & ipm);
+        in_parity = P32(pt & ipm);
 
         // Encryption
         ct = encrypt(pt, subkeys, rounds);
@@ -104,7 +104,7 @@ uint32_t linearizeParity2()
         pt = rand_uint32();
 
         // Encryption
-        in_parity = getParity(pt & ipm);
+        in_parity = P32(pt & ipm);
 
         // Linear approximation
         ct = encrypt(pt, subkeys, rounds);
@@ -206,7 +206,7 @@ uint32_t linearizeParity3()
         pt = rand_uint32();
 
         // Encryption
-        in_parity = getParity(pt & ipm);
+        in_parity = P32(pt & ipm);
 
         // Linear approximation
         ct = encrypt(pt, subkeys, rounds);

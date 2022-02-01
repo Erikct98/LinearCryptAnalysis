@@ -13,6 +13,9 @@
 // Compute parity of 32-bit word.
 uint32_t P32(uint32_t v);
 
+// Compute parity of 8-bit word.
+uint8_t P8(uint8_t v);
+
 uint32_t mulp2(uint32_t a);
 
 uint8_t SubByteByte(uint8_t word);

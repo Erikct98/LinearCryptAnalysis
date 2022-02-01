@@ -84,7 +84,7 @@ void trailOneRound()
             sect = pt[0] >> 24;
             for (uint16_t ipm = 0; ipm < 0x100; ipm++)
             {
-                linearized += COEFFS[ipm] * P32(sect & ipm);
+                linearized += COEFFS[ipm] * P8(sect & ipm);
             }
             in_parity = offset + (linearized >> 7);
 

@@ -164,7 +164,7 @@ void linearize_sbox_output_74_with_5_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_74_with_5(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_74_with_5(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 74 - 5 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -180,7 +180,7 @@ void linearize_sbox_output_7A_with_1_term()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_7A_with_1(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_7A_with_1(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 1 TERM ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -196,7 +196,7 @@ void linearize_sbox_output_7A_with_5_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_7A_with_5(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_7A_with_5(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 5 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -212,7 +212,7 @@ void linearize_sbox_output_7A_with_10_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_7A_with_10(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_7A_with_10(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 10 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -229,7 +229,7 @@ void linearize_sbox_output_7A_with_20_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_7A_with_20(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_7A_with_20(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 20 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -246,7 +246,7 @@ void linearize_sbox_output_74_with_21_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_74_with_21(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_74_with_21(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 74 - 21 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;
@@ -262,7 +262,7 @@ void linearize_sbox_output_7A_with_50_terms()
     for (uint16_t pt = 0; pt < 0x100; pt++)
     {
         ct = SubByteByte(pt);
-        count += (approx_7A_with_50(pt) ^ P32(ct & OPM)) & 1;
+        count += (approx_7A_with_50(pt) ^ P8(ct & OPM)) & 1;
     }
     std::cout << "--- 7A - 50 TERMS ---" << std::endl;
     std::cout << "count: " << count << " / " << 256 << std::endl;

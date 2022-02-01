@@ -46,6 +46,13 @@ uint32_t P32(uint32_t v)
     return (0x6996 >> v) & 0x1;
 }
 
+uint8_t P8(uint8_t v)
+{
+    v ^= v >> 4;
+    v &= 0xF;
+    return (0x6996 >> v) & 0x1;
+}
+
 uint8_t SubByteByte(uint8_t word)
 {
     return sbox[word & 0xFF];

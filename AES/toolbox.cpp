@@ -162,3 +162,19 @@ uint32_t rand_uint32()
 {
     return randuint32(mt);
 }
+
+void printResults(uint64_t *counts, uint16_t count_len, uint64_t total)
+{
+    std::cout << "counts: ";
+    for (uint16_t i = 0; i < count_len; i++)
+    {
+        std::cout << counts[i] << " ";
+    }
+    std::cout << std::endl;
+
+    uint64_t total_count = std::accumulate(counts, counts + count_len, 0);
+    float corr = 2 * (total_count / (float)total) - 1;
+    std::cout << "corr = 2 * (" << total_count << "/" << total
+              << ") - 1 = " << corr
+              << " = (+/-) 2^" << std::log2(std::abs(corr)) << std::endl;
+}

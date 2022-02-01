@@ -2,7 +2,9 @@
 This library provides a host of small functions that
 are useful in many situations.
 """
+import random
 from typing import Any, Iterable, List
+
 Table = List[List[Any]]
 
 GF2_8 = range(256)
@@ -80,6 +82,17 @@ def P8(v: int) -> int:
     return (0x6996 >> v) & 0x1
 
 
+def P32(v: int) -> int:
+    """
+    Compute Parity of 16-bit word `v`.
+    """
+    v ^= v >> 16
+    v ^= v >> 8
+    v ^= v >> 4
+    v &= 0xF
+    return (0x6996 >> v) & 0x1
+
+
 def bit_count(i: int) -> int:
     """
     Return the number of 1-bits in word `i`.
@@ -110,3 +123,7 @@ def export_table(table: Table, fname: str) -> None:
         fp.write('-' * (5 * len(table) + 3))
         for idx, row in enumerate(table):
             print(f'{idx:02X} [{",".join(f"{x:4}" for x in row)}]')
+
+
+def rand32() -> int:
+    return random.randint(0, 0xFFFFFFFF)

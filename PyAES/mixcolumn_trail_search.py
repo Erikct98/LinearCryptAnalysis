@@ -92,8 +92,7 @@ def fwd_map() -> Byyte:
 
 def find_input_mask(opm: int) -> int:
     """
-    Compute input mask corresponding that has correlation 1 with `opm`
-    through MixColumns.
+    Compute input mask that has correlation 1 with `opm` through MixColumns.
     """
     byytes = bwd_map()
     indices = [idx for idx, elt in enumerate(f'{opm:0>32b}') if elt == "1"]
@@ -106,8 +105,7 @@ def find_input_mask(opm: int) -> int:
 
 def find_output_mask(ipm: int) -> int:
     """
-    Compute output mask corresponding that has correlation 1 with `ipm`
-    through MixColumns.
+    Compute output mask that has correlation 1 with `ipm` through MixColumns.
     """
     byytes = fwd_map()
     indices = [idx for idx, elt in enumerate(f'{ipm:0>32b}') if elt == "1"]

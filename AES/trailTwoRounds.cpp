@@ -45,35 +45,38 @@ void trailTwoRounds()
 
     uint64_t counts[nr_threads];
 
+    // Initialize plaintexts
+    uint32_t pt_[4 * nr_threads];
+    for (uint16_t i = 0; i < 4 * nr_threads; i++)
+    {
+        pt_[i] = rand_uint32();
+    }
+
     // Count
     auto start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for
-    for (uint8_t t = 0; t < nr_threads; t++)
+    for (uint16_t t = 0; t < nr_threads; t++)
     {
         counts[t] = 0;
 
         // Variables
         int32_t linearized;
         uint16_t sect, in_parity, out_parity;
-        uint32_t pt[4], pt2[4];
-        for (uint16_t i = 0; i < 4; i++)
-        {
-            pt2[i] = rand_uint32();
-        }
+        uint32_t pt[4], *_pt = &pt_[4 * t];
 
         // Count
         for (uint64_t i = 0; i < factor; i++)
         {
             // Create plaintext
-            pt2[0] += 983;
-            pt2[1] += 939391;
-            pt2[2] += 39916801;
-            pt2[3] += 1301476963;
+            _pt[0] += 983;
+            _pt[1] += 939391;
+            _pt[2] += 39916801;
+            _pt[3] += 1301476963;
 
-            pt[0] = pt2[0];
-            pt[1] = pt2[1];
-            pt[2] = pt2[2];
-            pt[3] = pt2[3];
+            pt[0] = _pt[0];
+            pt[1] = _pt[1];
+            pt[2] = _pt[2];
+            pt[3] = _pt[3];
 
             // Analyse plaintext for 2 rounds
             linearized = 0;
@@ -82,6 +85,7 @@ void trailTwoRounds()
             {
                 linearized += COEFFS[ipm] * getParity(sect & ipm);
             }
+            in_parity = (offset + (linearized >> 7));
 
             // Encrypt
             for (uint8_t i = 0; i < 2; i++)

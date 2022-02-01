@@ -118,7 +118,13 @@ def find_output_mask(ipm: int) -> int:
     return opm
 
 
-if __name__ == "__main__":
+def test_find_input_mask():
     assert find_input_mask(0x80000000) == 0x40C08080
+
+
+def test_find_output_mask():
     assert find_output_mask(0x40C08080) == 0x80000000
-    print(f'{find_input_mask(0x00010000):0>8X}')
+
+
+if __name__ == "__main__":
+    pass

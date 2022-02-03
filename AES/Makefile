@@ -10,6 +10,7 @@ OBJTRAILONE			= trailone.o
 OBJTRAILTWO			= trailtwo.o
 OBJTRAILTHREE		= trailthree.o
 OBJTOOLBOX			= toolbox.o
+OBJKEYRECVR			= keyrecovery.o
 
 EXEVALIDATE			= validate.exe
 EXELINSBOX			= linearizedsbox.exe
@@ -17,6 +18,7 @@ EXETRAILMC			= trailmc.exe
 EXETRAILONE			= trailone.exe
 EXETRAILTWO			= trailtwo.exe
 EXETRAILTHREE		= trailthree.exe
+EXEKEYRECVR			= keyrecovery.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -48,6 +50,10 @@ trailThreeRounds: _toolbox
 	${CC} -c -o ${OBJTRAILTHREE} trailThreeRounds.cpp ${CFLAGS} ${PARFLAGS}
 	${CC} -o ${EXETRAILTHREE} ${OBJTRAILTHREE} ${OBJTOOLBOX} ${CFLAGS} ${PARFLAGS}
 
+keyrecovery: _toolbox
+	${CC} -c -o ${OBJKEYRECVR} keyrecovery.cpp ${CFLAGS}
+	${CC} -o ${EXEKEYRECVR} ${OBJKEYRECVR} ${OBJTOOLBOX} ${CFLAGS}
+
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
 	${OBJLINSBOX} ${EXELINSBOX} \
@@ -55,4 +61,5 @@ clean:
 	${OBJTRAILMC} ${EXETRAILMC} \
 	${OBJTRAILONE} ${EXETRAILONE} \
 	${OBJTRAILTWO} ${EXETRAILTWO} \
-	${OBJTRAILTHREE} ${EXETRAILTHREE}
+	${OBJTRAILTHREE} ${EXETRAILTHREE} \
+	${OBJKEYRECVR} ${EXEKEYRECVR}

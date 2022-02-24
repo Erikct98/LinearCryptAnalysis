@@ -62,15 +62,15 @@ void keyrecovery()
         0xF85B2ABC,
         0xD04C1C6F,
 
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
+        0x9E8EBB84,
+        0x341CE8E7,
+        0xE12EC4A2,
+        0x23034BDD,
 
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
+        0x01AEA180,
+        0x3E3A7D31,
+        0xBA3F9834,
+        0x59595CED,
 
         0x00000000,
         0x00000000,
@@ -92,10 +92,10 @@ void keyrecovery()
         }
 
         // Lookup key guess
-        k0 = 0x00;
-        k1 = 0x02;
-        k2 = 0x09;
-        k3 = 0x48;
+        k0 = 0x00; // right key-guess for key=0xC4 and opm=0x91
+        k1 = 0x02; // right key-guess for key=0xB7 and opm=0xB3
+        k2 = 0x09; // right key-guess for key=0x2A and opm=0x22
+        k3 = 0x48; // right key-guess for key=0x6F and opm=0x22
 
         // Input correlation
         p0 = compute_input_sbox_parity(pt[0] >> 24 & 0xFF, k0, masks_0x91, coeffs_0x91, offset_0x91);

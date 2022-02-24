@@ -119,11 +119,17 @@ def export_table(table: Table, fname: str) -> None:
     Write a fancy representation of `table` to file with name `fname`.
     """
     with open(fname, 'w') as fp:
-        fp.write(f'    {" ".join(f"{x:4X}" for x, _ in enumerate(table[0]))} ')
-        fp.write('-' * (5 * len(table) + 3))
+        print(f'    {" ".join(f"  {x:02X}" for x, _ in enumerate(table[0]))} ')
+        print('-' * (5 * len(table) + 3))
         for idx, row in enumerate(table):
             print(f'{idx:02X} [{",".join(f"{x:4}" for x in row)}]')
 
 
 def rand32() -> int:
     return random.randint(0, 0xFFFFFFFF)
+
+def signum(x) -> int:
+    """
+    Return the sign(um) of x
+    """
+    return int(x / abs(x))

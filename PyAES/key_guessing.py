@@ -46,29 +46,35 @@ def get_key_guesses(opm: int) -> List[int]:
 
     return list(map(lambda elt: elt[0], filter(lambda elt: elt[1], enumerate(g.s))))
 
-
-def test_correlation():
+def test_correlation_for_opm_and_key(opm, key, guesses):
     """
-    Test that for each key, there is a guess among the key guesses that
-    attains correlation 32/128.
+    Test that for `opm`, there is one key among `guesses` that has correlation
+    32/128 with `key`.
     """
-    opm = 0x77
-    guesses = get_key_guesses(opm)
-
     coeffs = {i: signum(c) for i, c in enumerate(ocorr(opm)) if abs(c) >= 16}
     offset = 3 - 5 * P8(opm & subbyte(0))
 
     def opf(ct: int) -> int:
         return P8(ct & opm)
 
-    for key in GF2_8:
-        mapping = {}
-        for kg in guesses:
-            def ipf(pt: int) -> int:
-                return sum(coeff * P8(ipm & (pt ^ kg)) for ipm, coeff in coeffs.items()) >= offset
+    mapping = {}
+    for kg in guesses:
+        def ipf(pt: int) -> int:
+            return sum(coeff * P8(ipm & (pt ^ kg)) for ipm, coeff in coeffs.items()) >= offset
 
-            mapping[kg] = keyed_func_corr(ipf, opf, ipk=key, opk=0)
-        assert 32 in mapping.values()
+        mapping[kg] = keyed_func_corr(ipf, opf, ipk=key, opk=0)
+    assert 32 in mapping.values()
+    print(f"{opm:02X}", f"{key:02X}", guesses, mapping)
+
+
+def test_correlation(opm=0x77):
+    """
+    Test that for each key, there is a guess among the key guesses that
+    attains correlation 32/128.
+    """
+    guesses = get_key_guesses(opm)
+    for key in GF2_8:
+        test_correlation_for_opm_and_key(opm, key, guesses)
 
 
 if __name__ == "__main__":

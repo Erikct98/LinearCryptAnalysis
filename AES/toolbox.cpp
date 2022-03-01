@@ -181,7 +181,16 @@ void printResults(uint64_t *counts, uint16_t count_len, uint64_t total)
 
     uint64_t total_count = std::accumulate(counts, counts + count_len, 0);
     float corr = 2 * (total_count / (float)total) - 1;
+    float corrlog = std::log2(std::abs(corr));
     std::cout << "corr = 2 * (" << total_count << "/" << total
               << ") - 1 = " << corr
-              << " = (+/-) 2^" << std::log2(std::abs(corr)) << std::endl;
+              << " = (+/-) 2^" << corrlog << std::endl;
+
+    float max_detectable = 1 - std::log2(total) / 2;
+    std::cout << "max detectable corr: " << max_detectable << std::endl;
+
+    if (corrlog < max_detectable) {
+        std::cout << "NOT DETECTABLE!" << std::endl;
+
+    }
 }

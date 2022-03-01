@@ -3,6 +3,7 @@ CFLAGS 		= -O3
 PARFLAGS	= -fopenmp
 
 OBJAES				= aes.o
+OBJBITFIX			= bitfix.o
 OBJVALIDATE			= validate.o
 OBJLINSBOX			= linearizedsbox.o
 OBJTRAILMC			= trailmc.o
@@ -13,6 +14,7 @@ OBJTOOLBOX			= toolbox.o
 OBJKEYRECVR			= keyrecovery.o
 OBJKEYRECVR3		= keyrecovery3.o
 
+EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
 EXELINSBOX			= linearizedsbox.exe
 EXETRAILMC			= trailmc.exe
@@ -27,6 +29,10 @@ _aes:
 
 _toolbox:
 	${CC} -c -o ${OBJTOOLBOX} toolbox.cpp ${CFLAGS}
+
+bitfix: _aes _toolbox
+	${CC} -c -o ${OBJBITFIX} bitfixing.cpp ${CFLAGS} ${PARFLAGS}
+	${CC} -o ${EXEBITFIX} ${OBJBITFIX} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
 
 validate: _aes _toolbox
 	${CC} -c -o ${OBJVALIDATE} validate.cpp ${CFLAGS}
@@ -63,6 +69,7 @@ keyrecovery3: _toolbox _aes
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
 	${OBJLINSBOX} ${EXELINSBOX} \
+	${OBJBITFIX} ${EXEBITFIX} \
 	${OBJVALIDATE} ${EXEVALIDATE} \
 	${OBJTRAILMC} ${EXETRAILMC} \
 	${OBJTRAILONE} ${EXETRAILONE} \

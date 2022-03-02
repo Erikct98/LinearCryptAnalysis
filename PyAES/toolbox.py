@@ -113,16 +113,21 @@ def cylesh8(x: int, steps: int) -> int:
     """
     return (x << steps ^ x >> 8 - steps) & 0xFF
 
+def cylesh32(x: int, steps: int) -> int:
+    """
+    CYclic LEft SHift 32-bit word by `steps` bits.
+    """
+    return ((x << steps) ^ (x >> (32 - steps))) & 0xFFFFFFFF
 
-def export_table(table: Table, fname: str) -> None:
+
+def export_table(table: Table) -> None:
     """
     Write a fancy representation of `table` to file with name `fname`.
     """
-    with open(fname, 'w') as fp:
-        print(f'    {" ".join(f"  {x:02X}" for x, _ in enumerate(table[0]))} ')
-        print('-' * (5 * len(table) + 3))
-        for idx, row in enumerate(table):
-            print(f'{idx:02X} [{",".join(f"{x:4}" for x in row)}]')
+    print(f'    {" ".join(f"  {x:02X}" for x, _ in enumerate(table[0]))} ')
+    print('-' * (5 * len(table) + 3))
+    for idx, row in enumerate(table):
+        print(f'{idx:02X} [{",".join(f"{x:4}" for x in row)}]')
 
 
 def rand32() -> int:

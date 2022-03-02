@@ -13,6 +13,7 @@ OBJTRAILTHREE		= trailthree.o
 OBJTOOLBOX			= toolbox.o
 OBJKEYRECVR			= keyrecovery.o
 OBJKEYRECVR3		= keyrecovery3.o
+OBJBLINDTRAIL		= blindtrail.o
 
 EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
@@ -23,6 +24,7 @@ EXETRAILTWO			= trailtwo.exe
 EXETRAILTHREE		= trailthree.exe
 EXEKEYRECVR			= keyrecovery.exe
 EXEKEYRECVR3		= keyrecovery3.exe
+EXEBLINDTRAIL		= blindtrail.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -66,6 +68,11 @@ keyrecovery3: _toolbox _aes
 	${CC} -c -o ${OBJKEYRECVR3} keyrecoveryv3.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYRECVR3} ${OBJKEYRECVR3} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
 
+blindtrail: _toolbox
+	${CC} -c -o ${OBJBLINDTRAIL} blindtrail.cpp ${CFLAGS}
+	${CC} -o ${EXEBLINDTRAIL} ${OBJBLINDTRAIL} ${OBJTOOLBOX} ${CFLAGS}
+
+
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
 	${OBJLINSBOX} ${EXELINSBOX} \
@@ -76,4 +83,5 @@ clean:
 	${OBJTRAILTWO} ${EXETRAILTWO} \
 	${OBJTRAILTHREE} ${EXETRAILTHREE} \
 	${OBJKEYRECVR} ${EXEKEYRECVR} \
-	${OBJKEYRECVR3} ${EXEKEYRECVR3}
+	${OBJKEYRECVR3} ${EXEKEYRECVR3} \
+	${OBJBLINDTRAIL} ${EXEBLINDTRAIL}

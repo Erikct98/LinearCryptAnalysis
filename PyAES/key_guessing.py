@@ -9,6 +9,7 @@ from correlation import corr, func_corr, keyed_func_corr, ocorr
 from toolbox import GF2_8, P8, signum, subbyte
 from SetCoverPy import setcover
 
+
 def get_32_mapping(opm: int, key: int) -> List[bool]:
     """
     Compute which key guesses give correlation 32/128 when the actual key is
@@ -17,16 +18,17 @@ def get_32_mapping(opm: int, key: int) -> List[bool]:
     `kg` gives correlation magnitude 32/128.
     """
     coeffs = {i: signum(c) for i, c in enumerate(ocorr(opm)) if abs(c) >= 16}
-    offset = 3 - 5 *P8(opm & subbyte(0))
+    offset = 3 - 5 * P8(opm & subbyte(0))
 
     # Compute which key guesses give correlation with magnitude 32/128
     res = []
     for kg in GF2_8:
         def ipf(pt):
-            total = sum((coeff * P8(ipm & (pt ^ kg))) for ipm, coeff in coeffs.items())
+            total = sum((coeff * P8(ipm & (pt ^ kg)))
+                        for ipm, coeff in coeffs.items())
             return total >= offset
 
-        corr128 = keyed_func_corr(ipf, lambda x: P8(x & opm), ipk = key, opk=0)
+        corr128 = keyed_func_corr(ipf, lambda x: P8(x & opm), ipk=key, opk=0)
         res.append(abs(corr128) == 32)
     return res
 
@@ -46,6 +48,7 @@ def get_key_guesses(opm: int) -> List[int]:
 
     return list(map(lambda elt: elt[0], filter(lambda elt: elt[1], enumerate(g.s))))
 
+
 def test_correlation_for_opm_and_key(opm, key, guesses):
     """
     Test that for `opm`, there is one key among `guesses` that has correlation
@@ -60,7 +63,7 @@ def test_correlation_for_opm_and_key(opm, key, guesses):
     mapping = {}
     for kg in guesses:
         def ipf(pt: int) -> int:
-            return sum(coeff * P8(ipm & (pt ^ kg)) for ipm, coeff in coeffs.items()) >= offset
+            return sum(c * P8(ipm & (pt ^ kg)) for ipm, c in coeffs.items()) >= offset
 
         mapping[kg] = keyed_func_corr(ipf, opf, ipk=key, opk=0)
     assert 32 in mapping.values()

@@ -59,7 +59,7 @@ uint32_t guess_key(const uint32_t key)
 {
     // Test settings
     const uint64_t sample_size = 0x400;
-    const uint16_t nr_improvement_iterations = 0x5;
+    const uint16_t nr_improvement_iterations = 0x1;
     const uint32_t OPM = 0x22000000;
 
     // Initialize plaintexts
@@ -67,7 +67,7 @@ uint32_t guess_key(const uint32_t key)
     uint32_t ct_par[sample_size];
 
     // Initialize plaintext and ciphertext
-    for (uint16_t i = 0; i < sample_size; i++)
+    for (uint32_t i = 0; i < sample_size; i++)
     {
         pt[i] = rand_uint32();
         ct_par[i] = P32(MixColumn(SubByteCol(pt[i] ^ key)) & OPM);
@@ -80,14 +80,14 @@ uint32_t guess_key(const uint32_t key)
     uint8_t guess_box_3[sample_size];
 
     // Other variables
-    int16_t count;
+    int32_t count;
     uint16_t in_parity;
     uint16_t out_parity;
     uint32_t res;
 
     // Recover key
     uint32_t guess;
-    uint16_t key_guess[4] = {0x99, 0x26, 0, 0};
+    uint16_t key_guess[4] = {0, 0, 0, 0};
     uint16_t arg[4] = {0,0,0,0};
     uint16_t argmax[4] = {0,0,0,0};
     int16_t all_time_guess[32];
@@ -101,7 +101,7 @@ uint32_t guess_key(const uint32_t key)
     for (uint16_t it = 0; it < nr_improvement_iterations; it++)
     {
         // Setup initial guess.
-        for (uint16_t i = 0; i < sample_size; i++)
+        for (uint32_t i = 0; i < sample_size; i++)
         {
             guess_box_0[i] = guess_parity_sbox_0(pt[i] >> 24 & 0xFF, key_guess[0]);
             guess_box_1[i] = guess_parity_sbox_1(pt[i] >> 16 & 0xFF, key_guess[1]);
@@ -116,7 +116,7 @@ uint32_t guess_key(const uint32_t key)
         {
             // Compute correlation in case of this key.
             count = sample_size / 2;
-            for (uint16_t j = 0; j < sample_size; j++)
+            for (uint32_t j = 0; j < sample_size; j++)
             {
                 in_parity = guess_parity_sbox_0(pt[j] >> 24 & 0xFF, kg);
                 in_parity ^= guess_box_1[j] ^ guess_box_2[j] ^ guess_box_3[j];
@@ -124,15 +124,13 @@ uint32_t guess_key(const uint32_t key)
             }
 
             // Check if this guess is better than current
-            // std::cout << "(" << kg << ", " << std::abs(count) << ", " << count << "), ";
+            // std::cout << "(" << kg << ", " << count << "), ";
             if (std::abs(count) > argmax[0])
             {
                 arg[0] = kg;
                 argmax[0] = std::abs(count);
             }
         }
-        // Update key
-        // std::cout << "\nupdating to " << std::hex<< arg << std::endl;
 
         // Make key guess for second box
         arg[1] = 0;
@@ -141,7 +139,7 @@ uint32_t guess_key(const uint32_t key)
         {
             // Compute correlation in case of this key.
             count = sample_size / 2;
-            for (uint16_t j = 0; j < sample_size; j++)
+            for (uint32_t j = 0; j < sample_size; j++)
             {
                 in_parity = guess_parity_sbox_1(pt[j] >> 16 & 0xFF, kg);
                 in_parity ^= guess_box_0[j] ^ guess_box_2[j] ^ guess_box_3[j];
@@ -157,7 +155,6 @@ uint32_t guess_key(const uint32_t key)
                 argmax[1] = std::abs(count);
             }
         }
-        // Update key
 
         // Make key guess for third box
         arg[2] = 0;
@@ -166,7 +163,7 @@ uint32_t guess_key(const uint32_t key)
         {
             // Compute correlation in case of this key.
             count = sample_size / 2;
-            for (uint16_t j = 0; j < sample_size; j++)
+            for (uint32_t j = 0; j < sample_size; j++)
             {
                 in_parity = guess_parity_sbox_23(pt[j] >> 8 & 0xFF, kg);
                 in_parity ^= guess_box_0[j] ^ guess_box_1[j] ^ guess_box_3[j];
@@ -188,7 +185,7 @@ uint32_t guess_key(const uint32_t key)
         {
             // Compute correlation in case of this key.
             count = sample_size / 2;
-            for (uint16_t j = 0; j < sample_size; j++)
+            for (uint32_t j = 0; j < sample_size; j++)
             {
                 in_parity = guess_parity_sbox_23(pt[j] & 0xFF, kg);
                 in_parity ^= guess_box_0[j] ^ guess_box_1[j] ^ guess_box_2[j];
@@ -204,22 +201,22 @@ uint32_t guess_key(const uint32_t key)
         }
 
         // Update key guess
-        // for (uint16_t i = 0 ; i < 4; i++)
-        // {
-        //     std::cout << arg[i] << " " << argmax[i] << std::endl;
-        // }
-
-        uint16_t *max = std::max_element(argmax, argmax + 4);
-        int offset = max - argmax;
-        key_guess[offset] = arg[offset];
-
-        guess = key_guess[0] << 24 ^ key_guess[1] << 16 ^ key_guess[2] << 8 ^ key_guess[3];
-        // std::cout << std::hex << guess << ", " << std::dec<< bit_count(guess ^ key) << std::endl;
-
-        for (uint16_t i = 0; i < 32; i ++)
+        for (uint16_t i = 0 ; i < 4; i++)
         {
-            all_time_guess[i] -= (guess >> i) & 0x1;
+            std::cout << std::hex << arg[i] << " " << argmax[i] << std::endl;
         }
+
+        // uint16_t *max = std::max_element(argmax, argmax + 4);
+        // int offset = max - argmax;
+        // key_guess[offset] = arg[offset];
+
+        // guess = key_guess[0] << 24 ^ key_guess[1] << 16 ^ key_guess[2] << 8 ^ key_guess[3];
+        // // std::cout << std::hex << guess << ", " << std::dec<< bit_count(guess ^ key) << std::endl;
+
+        // for (uint16_t i = 0; i < 32; i ++)
+        // {
+        //     all_time_guess[i] -= (guess >> i) & 0x1;
+        // }
     }
 
     uint32_t final_guess = 0;

@@ -12,6 +12,7 @@ OBJTRAILTWO			= trailtwo.o
 OBJTRAILTHREE		= trailthree.o
 OBJTOOLBOX			= toolbox.o
 OBJKEYRECVR			= keyrecovery.o
+OBJKEYRECVR2		= keyrecovery2.o
 OBJKEYRECVR3		= keyrecovery3.o
 OBJBLINDTRAIL		= blindtrail.o
 
@@ -23,6 +24,7 @@ EXETRAILONE			= trailone.exe
 EXETRAILTWO			= trailtwo.exe
 EXETRAILTHREE		= trailthree.exe
 EXEKEYRECVR			= keyrecovery.exe
+EXEKEYRECVR2		= keyrecovery2.exe
 EXEKEYRECVR3		= keyrecovery3.exe
 EXEBLINDTRAIL		= blindtrail.exe
 
@@ -64,6 +66,10 @@ keyrecovery: _toolbox
 	${CC} -c -o ${OBJKEYRECVR} keyrecovery.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYRECVR} ${OBJKEYRECVR} ${OBJTOOLBOX} ${CFLAGS}
 
+keyrecovery2: _toolbox
+	${CC} -c -o ${OBJKEYRECVR2} keyrecoveryv2.cpp ${CFLAGS}
+	${CC} -o ${EXEKEYRECVR2} ${OBJKEYRECVR2} ${OBJTOOLBOX} ${CFLAGS}
+
 keyrecovery3: _toolbox _aes
 	${CC} -c -o ${OBJKEYRECVR3} keyrecoveryv3.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYRECVR3} ${OBJKEYRECVR3} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
@@ -83,5 +89,6 @@ clean:
 	${OBJTRAILTWO} ${EXETRAILTWO} \
 	${OBJTRAILTHREE} ${EXETRAILTHREE} \
 	${OBJKEYRECVR} ${EXEKEYRECVR} \
+	${OBJKEYRECVR2} ${EXEKEYRECVR2} \
 	${OBJKEYRECVR3} ${EXEKEYRECVR3} \
 	${OBJBLINDTRAIL} ${EXEBLINDTRAIL}

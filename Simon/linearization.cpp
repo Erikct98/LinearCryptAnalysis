@@ -6,7 +6,7 @@
 
 static uint32_t ct;
 static const uint64_t KEY = 0x48378AF8BB87914A;
-static const uint32_t NR_ITERATIONS = 0x40000;
+static const uint32_t NR_ITERATIONS = 0x4000000;
 
 // #define AND(a, b) 0.5 * ((-1)^0 + (-1)^a + (-1)^b + (-1)^(a+b))
 #define AND(a, b) ~((~(a << 1) + ~(b << 1) + ((a ^ b) << 1)) >> 2)
@@ -80,7 +80,7 @@ uint32_t linearizeParity1()
             + I(F(xr,  6) ^ F(xr, 13) ^ F(xr,  1) ^ F(xr, 10))
         ) >> 2);
 
-        count += out_parity ^ in_parity;
+        count += (out_parity ^ in_parity) & 1;
     }
     return count;
 }
@@ -181,7 +181,7 @@ uint32_t linearizeParity2()
             - I(F(xl, 6) ^ F(xl, 13) ^ F(k2, 6) ^ F(k2, 13) ^ F(xr, 5) ^ F(xr, 12) ^ F(xr, 14))
         ) >> 3);
 
-        count += in_parity ^ X0R2 ^ X0R14;
+        count += (in_parity ^ X0R2 ^ X0R14) & 1;
     }
     return count;
 }
@@ -342,7 +342,7 @@ uint32_t linearizeParity3()
         uint16_t X1R8xX1R15 = X1R8 & X1R15;
         uint16_t out_parity = F(xr, 2) ^ F(k2, 2) ^ F(k1, 0) ^ X2R1xX2R10 ^ X1R8xX1R15;
 
-        count += in_parity ^ out_parity;
+        count += (in_parity ^ out_parity) & 1;
     }
     return count;
 }

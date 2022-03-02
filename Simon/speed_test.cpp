@@ -6,7 +6,7 @@
 
 void speedtest()
 {
-    uint32_t iterations = 0x1000000;
+    uint32_t iterations = 0x20000000;
     uint8_t enc_rounds = 32;
     uint64_t key = 0x1918111009080100;
     uint32_t pt = 0x65656877;

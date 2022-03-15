@@ -15,6 +15,7 @@ OBJKEYRECVR			= keyrecovery.o
 OBJKEYRECVR2		= keyrecovery2.o
 OBJKEYRECVR3		= keyrecovery3.o
 OBJBLINDTRAIL		= blindtrail.o
+OBJKEYGUESSFINDER	= keyguessfinder.o
 
 EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
@@ -27,6 +28,7 @@ EXEKEYRECVR			= keyrecovery.exe
 EXEKEYRECVR2		= keyrecovery2.exe
 EXEKEYRECVR3		= keyrecovery3.exe
 EXEBLINDTRAIL		= blindtrail.exe
+EXEKEYGUESSFINDER	= keyguessfinder.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -78,6 +80,11 @@ blindtrail: _toolbox
 	${CC} -c -o ${OBJBLINDTRAIL} blindtrail.cpp ${CFLAGS}
 	${CC} -o ${EXEBLINDTRAIL} ${OBJBLINDTRAIL} ${OBJTOOLBOX} ${CFLAGS}
 
+keyguessfinder: _toolbox
+	${CC} -c -o ${OBJKEYGUESSFINDER} keyguessfinder.cpp ${CFLAGS}
+	${CC} -o ${EXEKEYGUESSFINDER} ${OBJKEYGUESSFINDER} ${OBJTOOLBOX} ${CFLAGS}
+
+
 
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
@@ -91,4 +98,5 @@ clean:
 	${OBJKEYRECVR} ${EXEKEYRECVR} \
 	${OBJKEYRECVR2} ${EXEKEYRECVR2} \
 	${OBJKEYRECVR3} ${EXEKEYRECVR3} \
-	${OBJBLINDTRAIL} ${EXEBLINDTRAIL}
+	${OBJBLINDTRAIL} ${EXEBLINDTRAIL} \
+	${OBJKEYGUESSFINDER} ${EXEKEYGUESSFINDER}

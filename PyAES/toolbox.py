@@ -137,4 +137,4 @@ def signum(x) -> int:
     """
     Return the sign(um) of x
     """
-    return int(x / abs(x))
+    return int(x / abs(x)) if x != 0 else 1

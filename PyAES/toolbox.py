@@ -2,12 +2,14 @@
 This library provides a host of small functions that
 are useful in many situations.
 """
+from itertools import chain, combinations
 import random
-from typing import Any, Iterable, List
+from typing import Any, List
 
 Table = List[List[Any]]
 
 GF2_8 = range(256)
+GF2_8_min_0 = range(1, 256) # F_2^8 \ {0}
 
 _subbytes = [
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
@@ -138,3 +140,31 @@ def signum(x) -> int:
     Return the sign(um) of x
     """
     return int(x / abs(x)) if x != 0 else 1
+
+def int_to_hex(*x: int) -> int:
+    """
+    Convert int-interable to list of integers in hex-notation.
+    """
+    return [f"0x{elt:02X}" for elt in x]
+
+def xorsum(lst: List[int]) -> int:
+    """
+    Compute the sum of the elements in `lst` where we use the XOR operator.
+    """
+    elt = 0
+    for x in lst:
+        elt ^= x
+    return elt
+
+def powerset(iterable):
+    """
+    powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+    """
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
+def xor_closure(basis: List[int]) -> List[int]:
+    """
+    Compute the closure of `basis`, based on the xor-operator.
+    """
+    return set(xorsum(elts) for elts in powerset(basis))

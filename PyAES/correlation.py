@@ -18,7 +18,7 @@ def corr(ipm: int, opm: int) -> int:
 
 def icorr(ipm: int) -> List[int]:
     """
-    Returns list of correlations, where the correlation at index `0<=i<256`
+    Returns list of correlations, where the correlation at index `0 <= i < 256`
     is the correlation between input mask `ipm` and output mask `i`.
     """
     return [LAT[ipm][opm] for opm in GF2_8]
@@ -30,6 +30,40 @@ def ocorr(opm: int) -> List[int]:
     is the correlation between input mask `i` and output mask `opm`.
     """
     return [LAT[ipm][opm] for ipm in GF2_8]
+
+
+def ipms_with_abs_corr(opm: int, corr128: int) -> List[int]:
+    """
+    Returns list of input masks that have an absolute correlation * 128
+    of `corr128` with opm `opm`.
+    """
+    return [i for i, v in enumerate(ocorr(opm)) if abs(v) == corr128]
+
+
+def opms_with_abs_corr(ipm: int, corr128: int) -> List[int]:
+    """
+    Returns list of output masks that have an absolute correlation * 128
+    of `corr128` with ipm `ipm`.
+    """
+    return [i for i, v in enumerate(icorr(ipm)) if abs(v) == corr128]
+
+
+def ipm16(opm: int) -> int:
+    """
+    Returns an input mask that achieves +/- 2^-3 correlation over AES sbox
+    with output mask `opm`.
+    """
+    if opm == 0: return 0
+    return ipms_with_abs_corr(opm, 16)[0]
+
+
+def opm16(ipm: int) -> int:
+    """
+    Returns an output mask that achieves +/- 2^-3 correlation over AES sbox
+    with input mask `ipm`.
+    """
+    if ipm == 0: return 0
+    return opms_with_abs_corr(ipm, 16)[0]
 
 
 def func_corr(ipf: Callable, opf: Callable) -> int:

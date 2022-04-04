@@ -17,6 +17,7 @@ OBJKEYRECVR3		= keyrecovery3.o
 OBJBLINDTRAIL		= blindtrail.o
 OBJKEYGUESSFINDER	= keyguessfinder.o
 OBJKEYCLASSIS		= keyclassis.o
+OBJMONTECARLO		= montecarlo.o
 
 EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
@@ -31,6 +32,7 @@ EXEKEYRECVR3		= keyrecovery3.exe
 EXEBLINDTRAIL		= blindtrail.exe
 EXEKEYGUESSFINDER	= keyguessfinder.exe
 EXEKEYCLASSIS		= keyclassis.exe
+EXEMONTECARLO		= montecarlo.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -90,6 +92,10 @@ keyclassis: _toolbox
 	${CC} -c -o ${OBJKEYCLASSIS} keyclassification.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYCLASSIS} ${OBJKEYCLASSIS} ${OBJTOOLBOX} ${CFLAGS}
 
+montecarlo: _aes _toolbox
+	${CC} -c -o ${OBJMONTECARLO} montecarlo.cpp ${CFLAGS}
+	${CC} -o ${EXEMONTECARLO} ${OBJMONTECARLO} ${OBJTOOLBOX} ${OBJAES} ${CFLAGS}
+
 
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
@@ -105,4 +111,5 @@ clean:
 	${OBJKEYRECVR3} ${EXEKEYRECVR3} \
 	${OBJBLINDTRAIL} ${EXEBLINDTRAIL} \
 	${OBJKEYGUESSFINDER} ${EXEKEYGUESSFINDER} \
-	${OBJKEYCLASSIS} ${EXEKEYCLASSIS}
+	${OBJKEYCLASSIS} ${EXEKEYCLASSIS} \
+	${OBJMONTECARLO} ${EXEMONTECARLO}

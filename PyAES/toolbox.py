@@ -4,12 +4,12 @@ are useful in many situations.
 """
 from itertools import chain, combinations
 import random
-from typing import Any, List
+from typing import Any, List, Tuple
 
 Table = List[List[Any]]
 
-GF2_8 = range(256)
-GF2_8_min_0 = range(1, 256) # F_2^8 \ {0}
+GF2_8 = range(256)  # F_2^8
+GF2_8_min_0 = range(1, 256)  # F_2^8 \ {0}
 
 _subbytes = [
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
@@ -52,6 +52,13 @@ def subbyte(x: int) -> int:
     Apply subbyte transformation to 8-bit word `x`.
     """
     return _subbytes[x]
+
+
+def inv_subbyte(x: int) -> int:
+    """
+    Apply the inverse subbyte transformation to 8-bit word `x`.
+    """
+    return _subbytes.index(x)
 
 
 def I(x: int) -> int:
@@ -115,6 +122,7 @@ def cylesh8(x: int, steps: int) -> int:
     """
     return (x << steps ^ x >> 8 - steps) & 0xFF
 
+
 def cylesh32(x: int, steps: int) -> int:
     """
     CYclic LEft SHift 32-bit word by `steps` bits.
@@ -135,17 +143,20 @@ def export_table(table: Table) -> None:
 def rand32() -> int:
     return random.randint(0, 0xFFFFFFFF)
 
+
 def signum(x) -> int:
     """
     Return the sign(um) of x
     """
     return int(x / abs(x)) if x != 0 else 1
 
+
 def int_to_hex(*x: int) -> int:
     """
     Convert int-interable to list of integers in hex-notation.
     """
     return [f"0x{elt:02X}" for elt in x]
+
 
 def xorsum(lst: List[int]) -> int:
     """
@@ -156,6 +167,7 @@ def xorsum(lst: List[int]) -> int:
         elt ^= x
     return elt
 
+
 def powerset(iterable):
     """
     powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
@@ -163,8 +175,23 @@ def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
+
 def xor_closure(basis: List[int]) -> List[int]:
     """
     Compute the closure of `basis`, based on the xor-operator.
     """
     return set(xorsum(elts) for elts in powerset(basis))
+
+
+def split32(word: int) -> Tuple[int, int, int, int]:
+    """
+    Split a 32-bit word into 4 8-bit words.
+    """
+    return tuple([word >> (24 - 8 * i) & 0xFF for i in range(4)])
+
+
+def join32(*words: int) -> int:
+    """
+    Join 4 8-bit words into a 32-bit word.
+    """
+    return xorsum([w << (24 - 8 * i) for i, w in enumerate(words)])

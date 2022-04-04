@@ -7,7 +7,7 @@ int I(uint8_t x)
 
 uint8_t J(int x)
 {
- return (1 - x) >> 1;
+    return (1 - x) >> 1;
 }
 
 uint8_t F(uint8_t x, uint8_t i)

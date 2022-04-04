@@ -3,7 +3,8 @@ Aids in the creation of a linear trail through AES.
 """
 
 from typing import List
-from mixcolumn_trail_search import find_input_mask, find_output_mask, join32mask, split32mask
+from mixcolumn_trail_search import find_input_mask, find_output_mask
+from toolbox import join32, split32
 from correlation import ipm16, opm16
 
 
@@ -11,7 +12,7 @@ def print_mask(mask: List[int]) -> None:
     """
     Print mask to console.
     """
-    chunks = [split32mask(m) for m in mask]
+    chunks = [split32(m) for m in mask]
     for chunk in zip(*chunks):
         print(" ".join(f"0x{c:02X}" for c in chunk))
 
@@ -24,16 +25,16 @@ def forward_trail_one_round(ipm: List[int]):
     print_mask(ipm)
 
     # Trail over sbox
-    chunks = [split32mask(m) for m in ipm]
+    chunks = [split32(m) for m in ipm]
     chunks = [[opm16(x) for x in c] for c in chunks]
-    chunks = [join32mask(*c) for c in chunks]
+    chunks = [join32(*c) for c in chunks]
     print("mask after sbox")
     print_mask(chunks)
 
     # Trail over shiftrows
-    chunks = [split32mask(m) for m in chunks]
+    chunks = [split32(m) for m in chunks]
     chunks = [[c[o] for o, c in enumerate(chunks[i:] + chunks[:i])] for i in range(4)]
-    chunks = [join32mask(*c) for c in chunks]
+    chunks = [join32(*c) for c in chunks]
     print("mask after shiftrows")
     print_mask(chunks)
 
@@ -58,16 +59,16 @@ def backward_trail_one_round(opm: List[int]):
     print_mask(chunks)
 
     # Trail over shiftrows
-    chunks = [split32mask(m) for m in chunks]
+    chunks = [split32(m) for m in chunks]
     chunks = [[c[o] for o, c in enumerate(list(reversed(chunks[:i+1])) + list(reversed(chunks[i+1:])))] for i in range(4)]
-    chunks = [join32mask(*c) for c in chunks]
+    chunks = [join32(*c) for c in chunks]
     print("mask after shiftrows")
     print_mask(chunks)
 
     # Trail over sbox
-    chunks = [split32mask(m) for m in chunks]
+    chunks = [split32(m) for m in chunks]
     chunks = [[ipm16(x) for x in c] for c in chunks]
-    chunks = [join32mask(*c) for c in chunks]
+    chunks = [join32(*c) for c in chunks]
     print("mask after sbox")
     print_mask(chunks)
 

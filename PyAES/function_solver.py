@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Set, Union
-from itertools import product
+from itertools import combinations, product
 
 
 @dataclass()
@@ -128,24 +128,52 @@ class ExpSum:
                     exps.remove(e2)
             new_exps.append(e1)
 
+        # Remove exps with zero-factor
+        new_exps = list(filter(lambda x: x.fact != 0, new_exps))
+
         # Simplify all elements
         new_exps = [s.simplify() for s in new_exps]
         return new_exps
 
     def export(self):
-        min_fac = min(map(lambda x: abs(x.fact), self.exps))
-        elts = [e.export(min_fac) for e in self.exps]
+        exps = self.simplify(self.exps)
+        min_fac = min(map(lambda x: abs(x.fact), exps))
+        elts = [e.export(min_fac) for e in exps]
         elts = sorted(elts)
         elts = elts[0:1] + ["+ " + elt if not elt.startswith("-") else elt for elt in elts[1:]]
         return f"1/{1/min_fac:.2f} * [{' '.join(elts)}]"
 
 
-def OR(a: Exp, b: Exp) -> ExpSum:
+def OR2(a: Exp, b: Exp) -> ExpSum:
     return ExpSum([expZ * -1, a, b, a * b]) * .5
 
 
-def AND(a: Exp, b: Exp) -> ExpSum:
+def AND2(a: Exp, b: Exp) -> ExpSum:
     return ExpSum([expZ, a, b, a * b * -1]) * .5
+
+
+def OR(*a: Exp) -> ExpSum:
+    res = Exp({Sym(0)})
+    for elt in a:
+        res = OR2(res, elt)
+    return res
+
+
+def AND(*a: Exp) -> ExpSum:
+    res = Exp({Sym(0)})
+    for elt in a:
+        res = AND2(res, elt)
+    return res
+
+
+def majority(*a: Exp) -> ExpSum:
+    assert len(a) % 2 == 1
+    maj_cnt = (len(a) + 1) // 2
+
+    ands = []
+    for comb in combinations(a, maj_cnt):
+        ands.append(AND(*comb))
+    return OR(*ands)
 
 
 if __name__ == "__main__":
@@ -155,7 +183,14 @@ if __name__ == "__main__":
     expA = Exp({A})
     expB = Exp({B})
     expC = Exp({C})
-    x = OR(expA, expB)
-    res = OR(expC, x)
-    res = res.export()
-    print(res)
+    expD = Exp({A, B})
+    expE = Exp({A, C})
+
+    major = majority(expA, expB, expC, expD, expE)
+    print(major.export())
+
+    # x = OR(expA, expB)
+    # res = OR(expC, x)
+    # res = res.export()
+    # print(res)
+

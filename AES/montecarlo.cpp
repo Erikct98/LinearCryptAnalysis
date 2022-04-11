@@ -1,7 +1,8 @@
 #include "aes.h"
 #include "toolbox.h"
 
-uint8_t ipm_masks[768] = {
+// For opm `x`, contains three input masks at `[3 * x]`, `[3 * x + 1]` and `[3 * x + 2]`
+uint8_t input_masks[768] = {
     0x00, 0x00, 0x00, 0xA3, 0x2D, 0xC4, 0xFD, 0xB0, 0x6A, 0x4F, 0x9A, 0xFB,
     0x6A, 0x80, 0xB0, 0x3A, 0x6C, 0x89, 0xA7, 0x6A, 0xDA, 0x63, 0x71, 0x90,
     0x35, 0x40, 0xD8, 0xDE, 0xD0, 0x70, 0xBA, 0xA4, 0x8C, 0x6D, 0x62, 0x51,
@@ -70,70 +71,100 @@ uint8_t ipm_masks[768] = {
 // Compute the parity of the bits under `opm` for plaintext `pt`.
 uint8_t trailSbox(uint8_t pt, uint16_t opm)
 {
-    uint8_t *ptr = &ipm_masks[3 * opm];
+    uint8_t *ptr = &input_masks[3 * opm];
     int a = P8(pt & *ptr);
     int b = P8(pt & *(ptr + 1));
     int c = P8(pt & *(ptr + 2));
     return (5 - 2 * (a + b + c + (a ^ b) + (a ^ c))) > 0;
 }
 
-void testIteration(uint32_t *key, uint16_t rounds, uint64_t sampleSize, uint8_t *keyGuess)
+// Computes majority vote of parity of word masked by custmo input mask `mask`.
+// Here, `mask` must be equal to `M1 || M2^M3 || M2 || M3`,
+// where `M1`, `M2`and `M3` are three input masks that are linearly independent
+// and each have correlation 2^-2 with the desired output mask.
+uint8_t majority(uint8_t word, uint32_t mask)
 {
+    uint32_t v = (0x01010101 * word) & mask;
+    v ^= v >> 4;
+    v ^= v >> 2;
+    v ^= v >> 1;
+    v &= v >> 8; // Note: this should indeed be an '&'
+    v ^= v >> 16;
+    return v & 0x1;
+}
+
+void testIteration(uint32_t *key, uint16_t rounds, uint64_t sampleSize, uint32_t *keyGuesses, uint16_t nrKeyGuesses)
+{
+    // Statics
+    uint8_t opm = 0x01; // Output mask after two rounds.
+    uint8_t opms[4] = {0x16, 0x3B, 0x2D, 0x2D}; // Output masks before linear phase
+
+    // Compute the input masks corresponding with the opms.
+    uint8_t *M;
+    uint32_t ipms[4];
+    for (uint16_t j = 0; j < 4; j++)
+    {
+        M = &input_masks[3 * opms[j]];
+        // Create custom input mask with format M0 || M1 ^ M2 || M1 || M2,
+        // where M0, M1, M2 are the input masks.
+        ipms[j] = (M[0] << 24) ^ ((M[1] ^ M[2]) << 16) ^ (M[1] << 8) ^ M[2];
+    }
+
     // Variables
     uint32_t pt[4];
-    uint8_t ipp, opp, part;
-    uint64_t counter = sampleSize;
-
-    uint8_t opm = 0x01;
-    uint8_t opms[4] = {0x16, 0x3B, 0x2D, 0x2D};
-
-    for (uint64_t cnt = 0; cnt < sampleSize; cnt++)
+    uint8_t parts[4], ipp[nrKeyGuesses], opp, key_part;
+    uint64_t counters[nrKeyGuesses];
+    std::fill(counters, counters + nrKeyGuesses, sampleSize);
+    for (uint64_t i = 0; i < sampleSize; i++)
     {
         // Generate plaintext
         for (uint16_t j = 0; j < 4; j++)
         {
             pt[j] = rand_uint32();
+            parts[j] = (pt[j] >> (8 * (3 - j))) & 0xFF;
         }
 
         // Analyse plaintext
-        ipp = 0;
-        for (uint16_t j = 0; j < 4; j++)
+        for (uint16_t j = 0; j < nrKeyGuesses; j++)
         {
-            part = pt[j] >> (8 * (3-j)) & 0xFF;
-            part ^= keyGuess[j];
-            ipp ^= trailSbox(part, opms[j]);
+            ipp[j] = 0;
+            for (uint16_t k = 0; k < 4; k++)
+            {
+                key_part = (keyGuesses[j] >> (8 * (3 - k))) & 0xFF;
+                ipp[j] ^= trailSbox(parts[k] ^ key_part, opms[k]);
+                // ipp[j] ^= majority(parts[k] ^ key_part, ipms[k]);
+            }
         }
 
         // Encrypt
-        // AddRoundKey(pt, key, 0);
-        // SubBytes(pt);
         encrypt(pt, key, rounds);
 
         // Analyse cipher text.
-        // opp = 0;
-        // for (uint16_t j = 0; j < 4; j++)
-        // {
-        //     part = pt[j] >> (8 * (3-j)) & 0xFF;
-        //     ipp ^= P8(part & opms[j]);
-        // }
         opp = P8((pt[0] >> 24) & opm);
 
         // Update counters
-        counter -= ipp ^ opp;
+        for (uint16_t j = 0; j < nrKeyGuesses; j++)
+        {
+            counters[j] -= ipp[j] ^ opp;
+        }
     }
 
-    printResults(&counter, 1, sampleSize);
+    // Print results
+    for (uint16_t i = 0; i < nrKeyGuesses; i++)
+    {
+        std::cout << "counter: " << i << std::endl;
+        printResults(&counters[i], 1, sampleSize);
+    }
 }
-
 
 void monteCarloTest()
 {
     // Settings
     uint64_t sampleSize = 0x010000000;
-    uint16_t nrRandomTests = 16;
+    uint16_t nrKeys = 17;
     uint16_t rounds = 2;
 
-    // Key
+    // Generate encryption key
     uint32_t key[4];
     for (uint16_t i = 0; i < 4; i++)
     {
@@ -142,29 +173,23 @@ void monteCarloTest()
     uint32_t expandedKey[4 * (rounds + 1)];
     ExpandKey(key, expandedKey, rounds + 1);
 
-    // Execute a number of tests with random key guesses.
-    uint8_t keyGuess[4];
-    uint32_t kg;
-    for (uint16_t i = 0; i < nrRandomTests; i++)
+    // Generate `nrKeys - 1` random keys.
+    uint32_t keyGuesses[nrKeys];
+    for (uint16_t j = 0; j < nrKeys - 1; j++)
     {
-        // Set random key.
-        kg = rand_uint32();
-        for (uint16_t j = 0; j < 4; j++)
-        {
-            keyGuess[j] = kg >> (8 * (3-j)) & 0xFF;
-        }
-
-        // Execute test
-        testIteration(key, rounds, sampleSize, keyGuess);
+        keyGuesses[j] = rand_uint32();
     }
 
-    // Execute a test with the correct key guess
+    // Set actual key as final key guess
+    uint32_t kg = 0;
     for (uint16_t j = 0; j < 4; j++)
     {
-        keyGuess[j] = key[j] >> (8 * (3-j)) & 0xFF;
+        kg ^= expandedKey[j] & (0xFF << (8 * (3 - j)));
     }
-    testIteration(key, rounds, sampleSize, keyGuess);
+    keyGuesses[nrKeys - 1] = kg;
 
+    // Execute test
+    testIteration(key, rounds, sampleSize, keyGuesses, nrKeys);
 }
 
 int main()

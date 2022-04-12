@@ -92,9 +92,9 @@ keyclassis: _toolbox
 	${CC} -c -o ${OBJKEYCLASSIS} keyclassification.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYCLASSIS} ${OBJKEYCLASSIS} ${OBJTOOLBOX} ${CFLAGS}
 
-montecarlo: _aes _toolbox
+montecarlo: _toolbox
 	${CC} -c -o ${OBJMONTECARLO} montecarlo.cpp ${CFLAGS}
-	${CC} -o ${EXEMONTECARLO} ${OBJMONTECARLO} ${OBJTOOLBOX} ${OBJAES} ${CFLAGS}
+	${CC} -o ${EXEMONTECARLO} ${OBJMONTECARLO} ${OBJTOOLBOX} ${CFLAGS}
 
 
 clean:

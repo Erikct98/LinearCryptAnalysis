@@ -1,5 +1,6 @@
 #include "aes.h"
 #include "toolbox.h"
+#include <random>
 
 // For opm `x`, contains three input masks at `[3 * x]`, `[3 * x + 1]` and `[3 * x + 2]`
 uint8_t input_masks[768] = {
@@ -68,86 +69,52 @@ uint8_t input_masks[768] = {
     0x2B, 0x54, 0xD9, 0xCE, 0x22, 0x5B, 0x0F, 0x19, 0x51, 0xF4, 0xC3, 0xAB,
     0x58, 0x49, 0xD7, 0xE8, 0xBF, 0x86, 0xD0, 0xDC, 0xAE, 0x8C, 0x99, 0x28};
 
-// Compute the parity of the bits under `opm` for plaintext `pt`.
-uint8_t trailSbox(uint8_t pt, uint16_t opm)
+inline uint16_t sboxInputParity(uint8_t pt, uint8_t *ipms)
 {
-    uint8_t *masks = &input_masks[3 * opm];
-    int a = P8(pt & masks[0]);
-    int b = P8(pt & masks[1]);
-    int c = P8(pt & masks[2]);
-    return (5 - 2 * (a + b + c + (a ^ b) + (a ^ c))) > 0;
+    uint8_t P0 = P8(ipms[0] & pt);
+    uint8_t P1 = P8(ipms[1] & pt);
+    uint8_t P2 = P8(ipms[2] & pt);
+    return (5 - 2 * (P0 + P1 + P2 + (P0 ^ P1) + (P0 + P2))) < 0;
 }
 
-void testIteration(uint32_t *key, uint16_t rounds, uint64_t sampleSize, uint32_t *keyGuesses, uint16_t nrKeyGuesses)
+inline uint16_t fourwaysboxinputparity(uint16_t pt)
 {
-    // Statics
-    uint8_t opm = 0x01; // Output mask after two rounds.
-    uint8_t opms[4] = {0x16, 0x3B, 0x2D, 0x2D}; // Output masks before SR + MDS of round 1
+    
+}
 
-    // Variables
-    uint32_t pt[4];
-    uint16_t parts[4], ipp[nrKeyGuesses], opp;
-    uint8_t *key_parts;
-    uint64_t counters[nrKeyGuesses];
-    std::fill(counters, counters + nrKeyGuesses, sampleSize);
-
-    // Run test
-    for (uint64_t i = 0; i < sampleSize; i++)
+void test_input_masks()
+{
+    uint8_t *ipms;
+    for (uint16_t opm = 1; opm < 256; opm++)
     {
-        // Generate plaintext
-        for (uint16_t j = 0; j < 4; j++)
+        // Collect input masks
+        ipms = &input_masks[3 * opm];
+
+        // Compute correlation
+        int16_t corr128 = 128;
+        for (uint16_t pt = 0; pt < 256; pt++)
         {
-            pt[j] = rand_uint32();
-            parts[j] = ((uint8_t *) &pt[j])[3 - j]; // parts[j] is j'th diagonal byte of the plaintext.
-            // std::cout << pt[j] << std::endl;
-            // std::cout << parts[j] << std::endl;
+            corr128 -= sboxInputParity(pt, ipms) ^ P8(opm & SubByteByte(pt));
         }
-
-
-
-        // Analyse plaintext
-        for (uint16_t j = 0; j < nrKeyGuesses; j++)
+        if (std::abs(corr128) != 32)
         {
-            // ipp[j] = 0;
-            key_parts = (uint8_t *) &keyGuesses[j];
-            // for (uint16_t k = 0; k < 4; k++)
-            // {
-            //     ipp[j] ^= trailSbox(parts[k] ^ key_parts[3 - k], opms[k]);
-            // }
-            // std::cout << "j:" << j << ", key:" << (uint16_t) key_parts[3] << std::endl;
-            ipp[j] = trailSbox(parts[0] ^ key_parts[3], opms[0]);
+            std::cout << "ERROR! opm 0x" << std::hex << opm
+                      << " gave corr128 = " << std::dec << corr128 << std::endl;
         }
-
-        // Encrypt
-        // encrypt(pt, key, rounds);
-        AddRoundKey(pt, key, 0);
-        SubBytes(pt);
-
-        // Analyse cipher text.
-        opp = P8((pt[0] >> 24) & opm);
-
-        // Update counters
-        for (uint16_t j = 0; j < nrKeyGuesses; j++)
-        {
-            counters[j] -= ipp[j] ^ opp;
-        }
-    }
-
-    // Print results
-    for (uint16_t i = 0; i < nrKeyGuesses; i++)
-    {
-        // std::cout << "counter: " << i << std::endl;
-        printResults(&counters[i], 1, sampleSize);
     }
 }
 
-void monteCarloTest()
+void monteCarlo()
 {
     // Settings
-    uint64_t sampleSize = 0x002000000;
-    // uint64_t sampleSize = 0x0004;
-    uint16_t nrKeys = 2;
+    uint64_t sampleSize = 0x20000000;
     uint16_t rounds = 2;
+    uint8_t opm = 0x01;
+    uint16_t nrKeyGuesses = 17; // of which the first is with the correct key
+    // The four output masks on the diagonal that will make `opm`   after the
+    // MDS step.
+    uint8_t opms[4] = {0x16, 0x3B, 0x2D, 0x2D};
+    uint8_t *ipms;
 
     // Generate encryption key
     uint32_t key[4];
@@ -158,31 +125,84 @@ void monteCarloTest()
     uint32_t expandedKey[4 * (rounds + 1)];
     ExpandKey(key, expandedKey, rounds + 1);
 
-    // Generate `nrKeys - 1` random keys.
-    uint32_t keyGuesses[nrKeys];
-    for (uint16_t j = 0; j < nrKeys - 1; j++)
+    // Generate key guesses
+    uint32_t keyguesses[nrKeyGuesses];
+    // Set first key equal to correct key
+    keyguesses[0] = 0;
+    for (uint16_t i = 0; i < 4; i++)
     {
-        keyGuesses[j] = rand_uint32();
+        keyguesses[0] ^= key[i] & (0xFF << (8 * (3 - i)));
+    }
+    // Choose other keys at random
+    for (uint16_t i = 1; i < nrKeyGuesses; i++)
+    {
+        keyguesses[i] = rand_uint32();
     }
 
-    // Set actual key as final key guess
-    uint32_t kg = 0;
-    for (uint16_t j = 0; j < 4; j++)
+    // Run test
+    uint32_t pt[4];
+    uint8_t ipp[nrKeyGuesses], opp, part;
+    int64_t counters[nrKeyGuesses];
+    std::fill(counters, counters + nrKeyGuesses, sampleSize);
+    for (uint64_t i = 0; i < sampleSize; i++)
     {
-        kg ^= expandedKey[j] & (0xFF << (8 * (3 - j)));
-    }
-    keyGuesses[nrKeys - 1] = kg;
+        // Generate plaintext
+        for (uint16_t j = 0; j < 4; j++)
+        {
+            pt[j] = rand_uint32();
+        }
 
-    for (uint16_t j = 0; j < nrKeys; j++)
+        // Analyse plaintext for all key guesses
+        for (uint16_t j = 0; j < nrKeyGuesses; j++)
+        {
+            ipp[j] = 0;
+            for (uint16_t k = 0; k < 4; k++)
+            {
+                ipms = &input_masks[3 * opms[k]];
+                part = pt[k] >> (8 * (3 - k));
+
+                // Guess encryption of plaintext part
+                part ^= keyguesses[j] >> (8 * (3 - k));
+
+                // Compute expected input parity (ipp)
+                ipp[j] ^= sboxInputParity(part, ipms);
+            }
+        }
+
+        // Encrypt
+        AddRoundKey(pt, expandedKey, 0);
+        SubBytes(pt);
+        ShiftRows(pt);
+        MixColumns(pt);
+        AddRoundKey(pt, expandedKey, 1);
+        SubBytes(pt);
+        ShiftRows(pt);
+        AddRoundKey(pt, expandedKey, 2);
+
+        // Analyse encryption
+        opp = P8((pt[0] >> 24) & opm);
+
+        // Update counters
+        for (uint16_t j = 0; j < nrKeyGuesses; j++)
+        {
+            counters[j] -= ipp[j] ^ opp;
+        }
+    }
+
+    // Analyse results
+    double corr, corrlog;
+    for (uint16_t j = 0; j < nrKeyGuesses; j++)
     {
-        std::cout << std::hex << "key " << j << " = " << keyGuesses[j] << std::endl;
+        corr = 2 * (counters[j] / (double) sampleSize) - 1;
+        float corrlog = std::log2(std::abs(corr));
+        std::cout << "idx " << j
+                  << ", cnt=" << counters[j]
+                  << ", log=" << corrlog
+                  << std::endl;
     }
-
-    // Execute test
-    testIteration(key, rounds, sampleSize, keyGuesses, nrKeys);
 }
 
 int main()
 {
-    monteCarloTest();
+    monteCarlo();
 }

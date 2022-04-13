@@ -18,6 +18,7 @@ OBJBLINDTRAIL		= blindtrail.o
 OBJKEYGUESSFINDER	= keyguessfinder.o
 OBJKEYCLASSIS		= keyclassis.o
 OBJMONTECARLO		= montecarlo.o
+OBJDUALTRAIL		= dualtrail.o
 
 EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
@@ -33,6 +34,7 @@ EXEBLINDTRAIL		= blindtrail.exe
 EXEKEYGUESSFINDER	= keyguessfinder.exe
 EXEKEYCLASSIS		= keyclassis.exe
 EXEMONTECARLO		= montecarlo.exe
+EXEDUALTRAIL		= dualtrail.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -96,6 +98,9 @@ montecarlo: _toolbox
 	${CC} -c -o ${OBJMONTECARLO} montecarlo.cpp ${CFLAGS}
 	${CC} -o ${EXEMONTECARLO} ${OBJMONTECARLO} ${OBJTOOLBOX} ${CFLAGS}
 
+dualtrail: _toolbox
+	${CC} -c -o ${OBJDUALTRAIL} dualtrail.cpp ${CFLAGS}
+	${CC} -o ${EXEDUALTRAIL} ${OBJDUALTRAIL} ${OBJTOOLBOX} ${CFLAGS}
 
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
@@ -112,4 +117,5 @@ clean:
 	${OBJBLINDTRAIL} ${EXEBLINDTRAIL} \
 	${OBJKEYGUESSFINDER} ${EXEKEYGUESSFINDER} \
 	${OBJKEYCLASSIS} ${EXEKEYCLASSIS} \
-	${OBJMONTECARLO} ${EXEMONTECARLO}
+	${OBJMONTECARLO} ${EXEMONTECARLO} \
+	${OBJDUALTRAIL} ${EXEDUALTRAIL}

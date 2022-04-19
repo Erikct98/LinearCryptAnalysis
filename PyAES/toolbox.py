@@ -168,6 +168,16 @@ def xorsum(lst: List[int]) -> int:
     return elt
 
 
+def orsum(lst: List[int]) -> int:
+    """
+    Compute the sum of the elements in `lst` where we use the OR operator.
+    """
+    elt = 0
+    for x in lst:
+        elt |= x
+    return elt
+
+
 def powerset(iterable):
     """
     powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)

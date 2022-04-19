@@ -49,6 +49,13 @@ def transform(x: int) -> int:
              ^ cylesh8(x, 3) ^ cylesh8(x, 4) ^ 0x63
 
 
+def inv_transform(x: int) -> int:
+    """
+    Apply the inverse linear transformation of the AES SubBytes step to `x`.
+    """
+    return cylesh8(x, 1) ^ cylesh8(x, 3) ^ cylesh8(x, 6) ^ 0x05
+
+
 def compute_AES_subbytes() -> List[int]:
     """
     Compute AES SubBytes lookup table for 8-bit words.
@@ -67,3 +74,7 @@ def compute_subbytes_LAT() -> Table:
         for opm in GF2_8:
             LAT[ipm][opm] -= sum(P8(ipm & pt ^ opm & sbox[pt]) for pt in GF2_8)
     return LAT
+
+
+if __name__ == "__main__":
+    pass

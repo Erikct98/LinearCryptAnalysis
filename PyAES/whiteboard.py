@@ -3,288 +3,256 @@ A file with some random scribbles that might be interesting
 """
 
 from collections import Counter
-from itertools import chain, combinations
+from itertools import chain, combinations, product
 import math
 from random import randint, random
+from re import L
 import sys
 from tkinter import E
-from mmm import MM5_input_masks, core_input_masks, input_func_for_MM5, majority_func_for_masks
-from mixcolumn_trail_search import find_input_mask, find_output_mask, join32mask, split32mask
+from key_classes import orthogonal_class, zero_key_class
+from mmm import MM5_input_masks, core_input_masks, core_input_masks_v2, input_func_for_MM5, majority_func_for_masks
+from mixcolumn_trail_search import find_input_mask, find_output_mask
 from key_guessing import get_key_guesses
 from correlation import corr, func_corr, icorr, ipm16, keyed_func_corr, ocorr, opm16
 from mixcolumn import mixcolumn
-from toolbox import GF2_8, I, J, P32, P8, GF2_8_min_0, bit_count, export_table, inv_subbyte, rand32, signum, subbyte, transpose, _subbytes
+from toolbox import GF2_8, I, J, P32, P8, GF2_8_min_0, bit_count, export_table, inv_subbyte, orsum, rand32, signum, subbyte, transpose, _subbytes, join32, split32, xor_closure, xorsum
 from subbytes import compute_subbytes_LAT, inv_transform
 from LAT import LAT
 from KAT import KAT
 from SetCoverPy import setcover
 import numpy as np
 
+def MM2():
+    opm = 0x01
+    masks = MM5_input_masks(opm)
+    map = {
+        pt: subbyte(pt)
+        for pt in GF2_8
+    }
 
-def check_coeff_ipm():
-    """
-    Double check that these coefficients are correct
-    """
-    opm = 0x91
-    coeffs = [0, 0, -10, 6, 2, -2, -4, -8, 14, -2, 0, 8, 4, 0, 2, 6, -12, -8, -10, -14, -2, -10, -4, 12, -6, 6, 8, 4, 8, 8, 10, -6, 12, 4, 10, 2, -6, -10, -12, 0, -2, 6, -8, 8, -8, 4, -10, -6, -8, 12, 2, -2, -2, -2, 12, -12, 10, 6, 0, -4, 12, 4, -2, -10, 2, 2, 4, 12, -16, -4, -2, 2, 0, -8, -2, -10, 2, 6, -12, 8, 6, -6, -4, 0, -12, -4, -2, -10, -12, 8, -10, 2, 6, -2, -12, 4, 2, 10, 4, 4, 12, -8, 2, -10, 12, -4, -6, -6, 2, 6, 12, -16, 14, 2, -12, 8, -8, 8, 10, -6, 0, 4, 2, 14, 6, 6, 12, -
-              12, 4, -8, 14, 2, 6, 6, -12, -12, -6, -10, 0, 4, 0, 8, -14, 2, -12, 12, 2, -14, -10, 2, 0, -12, 2, -6, -4, 4, -8, -12, 6, 2, -4, 0, -2, 2, 2, 10, -16, -8, 6, 2, -12, -8, -8, 8, -6, -14, -4, -4, 2, -6, 2, -2, -4, 0, 6, -10, 8, 8, 8, -12, -10, 2, -10, -6, -12, 0, -12, -12, -2, 6, -4, -16, -10, 10, 14, 14, -4, -4, 6, 14, 0, 8, 12, 8, -6, 6, -4, -4, 2, 10, 6, -6, -8, 4, -14, 6, -16, 12, 4, -4, 6, 6, 4, 8, -2, 2, -14, -6, -8, 0, -14, 2, -4, 12, -4, -8, 2, 14, 12, -12, 2, -14, 2, 6, 12, 8]
+    nr_masks = 2
 
-    corr128 = 128
-    for pt in GF2_8:
-        input_parity = J(sum(coeffs[ipm] * I(P8(ipm & pt))
-                             for ipm in GF2_8) >> 8)
-        output_parity = P8(opm & subbyte(pt))
-        corr128 -= input_parity ^ output_parity
-    return corr128
+    # res = {}
+    # for ms in combinations(masks, nr_masks):
+    #     cnt = {}
+    #     for pt, ct in map.items():
+    #         key = (*[P8(pt & m) for m in ms], P8(ct & opm))
+    #         cnt.setdefault(key, 0)
+    #         cnt[key] += 1
+    #     cnt = {
+    #         k: v for k, v in sorted(cnt.items())
+    #     }
+    #     res[ms] = cnt
+    # print(res)
 
+    # # Investigate results
+    # for masks, cnts in res.items():
+    #     max_cnt = 0
+    #     for bits in product(*([range(2)] * nr_masks)):
+    #         if (*bits, 0) in cnts and (*bits, 1) in cnts:
+    #             max_cnt += max(cnts[(*bits, 0)], cnts[(*bits, 1)])
+    #     print(masks, max_cnt)
 
-def check_corr(ipm, opm):
-    corr128 = 128
-    for pt in GF2_8:
-        in_parity = P8(ipm & pt)
-        out_parity = P8(opm & subbyte(pt))
-        corr128 -= in_parity ^ out_parity
-    return corr128
-
-
-def check_mixcol(ipm, opm):
-    corr1024 = 1024
-    for _ in range(0x100):
-        pt = rand32()
-        in_parity = P32(pt & ipm)
-        ct = mixcolumn(pt)
-        out_parity = P32(opm & ct)
-        corr1024 -= in_parity ^ out_parity
-    return corr1024
-
-
-def remove_terms_experiment():
-    """
-    Test if this can be done with fewer terms than all 256.
-    Result: we seem to be able to have 100% information with only 81 terms with highest correlation.
-    Increase to 115 terms and the distinguisher is a simple split.
-    """
-    opm = 0x91
-    coeffs = ocorr(opm)
-    offset = P8(opm & subbyte(0))
-
-    normal_results = []
-    for pt in GF2_8:
-        input_parity = offset + \
-            (sum(coeffs[ipm] * P8(ipm & pt) for ipm in GF2_8) >> 7)
-        output_parity = P8(opm & subbyte(pt))
-        normal_results.append(input_parity ^ output_parity)
-
-    # coeffsv2 = {i: x * c for i, c in enumerate(coeffs) for x in (1, 3) if abs(c) > 10 and (x == 1 or abs(c) in (12, 14))}
-    # coeffsv2 = {i: (1 + (abs(c) == 14)) * c for i, c in enumerate(coeffs) if abs(c) >= 6}
-    coeffsv2 = {i: c for i, c in enumerate(coeffs) if abs(c) >= 8}
-    print(len(coeffsv2.items()))
-    offset = 0
-    fast_results = []
-    for pt in GF2_8:
-        input_parity = offset - (sum(coeff * P8(ipm & pt)
-                                     for ipm, coeff in coeffsv2.items()) <= -6)
-        output_parity = P8(opm & subbyte(pt))
-        fast_results.append(input_parity ^ output_parity)
-
-    print("max", max(sum(coeff * P8(ipm & pt) for ipm, coeff in coeffsv2.items())
-                     for pt in GF2_8 if sum(coeffs[ipm] * P8(ipm & pt) for ipm in GF2_8) == -128))
-    print("min", min(sum(coeff * P8(ipm & pt) for ipm, coeff in coeffsv2.items())
-                     for pt in GF2_8 if sum(coeffs[ipm] * P8(ipm & pt) for ipm in GF2_8) == 0))
-
-    x = [(sum(coeff * P8(ipm & pt) for ipm, coeff in coeffsv2.items()),
-          sum(coeffs[ipm] * P8(ipm & pt) for ipm in GF2_8)) for pt in GF2_8]
-    print(sorted(x))
-
-    print(normal_results, fast_results)
-    print(len(coeffsv2.values()))
-
-    corr128 = sum(a ^ b for a, b in zip(normal_results, fast_results))
-    return corr128
-
-
-def corr_test():
-    # opm = 0x15
-    # coeffs = ocorr(opm)
-    # offset = P8(opm & subbyte(0))
-    # coeffs = {i: signum(c) for i, c in enumerate(coeffs) if abs(c) >= 16}
-    # cut_off = 3 - offset * 5
-
-    # GF2_8 #range(256)[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    GUESSES = [0, 1, 16, 17, 128, 129, 144, 145]
-
-    # Compute sets
-    for opm in range(1, 256):
-        coeffs = ocorr(opm)
-        offset = P8(opm & subbyte(0))
-        coeffs = {i: signum(c) for i, c in enumerate(coeffs) if abs(c) >= 16}
-        cut_off = 3 - offset * 5
-
-        hitmask = 0
-        for kg in GUESSES:
-            def ipf(pt):
-                return sum((coeff * P8(ipm & (pt ^ kg))) for ipm, coeff in coeffs.items()) >= cut_off
-
-            res = [keyed_func_corr(ipf, lambda x: P8(
-                x & opm), ipk=key, opk=0) for key in GF2_8]
-            bitstr = "".join([str(int(abs(c) == 32)) for c in res])
-            print(opm, kg, bitstr)
-            bits = int(bitstr, 2)
-            hitmask |= bits
-            print("total",  f"{hitmask:0>255b}")
-
-        print(opm, all(x == 1 for x in res))
-
-        # print(kg, sum(abs(c) for c in res), Counter(res), ''.join([str(int(abs(i) == 32)) for i in res]))
-
-    # matrix = []
-    # for guess in GUESSES:
-    #     def ipf(pt):
-    #         return (sum(coeff * P8(ipm & (pt ^ guess)) for ipm, coeff in coeffs.items()) >= cut_off)
-
-    #     res = [keyed_func_corr(ipf, lambda x: P8(x & opm), ipk = key, opk=0) for key in GF2_8]
-    #     print(guess, sum(abs(c) for c in res), Counter(res), ''.join([str(int(abs(i) == 32)) for i in res]))
-    #     # matrix.append((guess, [int(abs(i) == 32) for i in res]))
-
-    # mapping = {}
-    # for key in GF2_8:
-    #     mapping[key] = tuple(guess for guess in range(len(GUESSES)) if matrix[guess][1][key])
-
-    # print(mapping)
-    # print(Counter(mapping.values()).most_common(10))
-
-    # matrix.sort(key=lambda x: x[1])
-    # for key, res in matrix:
-    #     print(f'0x{key:3X}', ''.join([str(i) for i in res]))
-
-    # transpose(matrix)
-
-    # # Create setcover matrix
-    # cost = [1] * 256
-
-    # # solve set cover
-    # g = setcover.SetCover(np.array(matrix), np.array(cost))
-    # print(g.greedy())
-    # print(g.SolveSCP())
-    # print(g.s)
-
-
-def build_KAT():
-    """
-    Build LAT between keys
-    """
-    sq_lat = [[corr(ipm, opm)**2 for opm in GF2_8] for ipm in GF2_8]
-
-    KAT = [[None for _ in GF2_8] for __ in GF2_8]
-    for key_diff in GF2_8:
-        for opm in GF2_8:
-            KAT[key_diff][opm] = int(
-                sum(sq_lat[ipm][opm] * I(P8(ipm & key_diff)) for ipm in GF2_8) / 128)
-    print(KAT)
-    # export_table(KAT, "KAT.txt")
-
-
-def stats_on_KAT():
-    abskat = [abs(KAT[x][1]) for x in GF2_8]
-    abslat = [abs(x) for x in LAT[1]]
-    print(sum(x * y for x, y in Counter(abskat).items()) / 256)
-    print(sum(x * y for x, y in Counter(abslat).items()) / 256)
-
-    print(list(map(lambda x: f"{x[0]:08b}", filter(
-        lambda x: abs(x[1]) == 16, enumerate(abskat)))))
-
-    # row_sums = [sum(abs(KAT[key_diff][x]) for x in GF2_8) for key_diff in GF2_8]
-    # print(Counter(row_sums), row_sums)
-    # col_sums = [sum(abs(KAT[x][opm]) for x in GF2_8) for opm in GF2_8]
-    # print(Counter(col_sums), col_sums)
-
-    # delta_sums = [(sum(abs(KAT[delta ^ opm][opm]) for opm in GF2_8), delta) for delta in GF2_8]
-    # print(sorted(delta_sums))
-
-
-def test_new_correlation():
-    GF = range(1, 256)
-
-    corrs = {}
-    for opm in GF:
-        masks = [i for i, e in enumerate(ocorr(opm)) if abs(e) == 16]
-
-        def ipf(pt):
-            Q = sum(I(P8(pt & ipm)) for ipm in masks)
-            return J(int(Q/abs(Q)))
-
-        def opf(ct):
-            return P8(ct & opm)
-
-        corrs[opm] = func_corr(ipf, opf)
-        assert abs(corrs[opm]) == 32
-    print(corrs)
-
-
-def test_masks():
-    for opm in GF2_8_min_0:
-        masks = MM5_input_masks(opm)
-        inv = inv_subbyte(opm)
-        print(opm, inv_transform(opm), inv, masks)
-
-def linear_trail_mulp_inv():
-    mulp_inv = [inv_transform(x) for x in _subbytes]
-    LAT = [
-        [128 - sum(P8(pt & ipm ^ mulp_inv[pt] & opm) for pt in GF2_8) for ipm in GF2_8]
-        for opm in GF2_8
-    ]
-    export_table(LAT)
-
-if __name__ == "__main__":
-    # test_masks()
-    # linear_trail_mulp_inv()
-
-    opm = 0x4A
-    ipms = next(core_input_masks(opm))
 
     def opf(ct):
         return P8(ct & opm)
 
     res = {}
-    for offset1 in GF2_8:
-        for offset2 in GF2_8:
+    best = 0
+    info = None
+    for ms in combinations(GF2_8_min_0, nr_masks):
+        def ipf(pt):
+            return orsum(P8(pt & m) for m in ms)
 
-            def ipf(pt):
-                x = P8(pt & ipms[0])
-                x += P8((pt + offset1) & ipms[1])
-                x += P8((pt + offset2) & ipms[2])
-                return x >= 2
+        corr128 = func_corr(ipf, opf)
+        # print(ms, corr128)
+        if abs(corr128) > best:
+            best = abs(corr128)
+            info = best, ms
 
-            corr128 = abs(func_corr(ipf, opf))
-            if corr128 >= 40:
-                res.setdefault(corr128, [])
-                res[corr128].append((offset1, offset2))
-    print(res)
+    print(best, info)
 
-    pass
+
+def MM4():
+    opm = 0x01
+    ipms = [0xA3, 0x2D, 0xC4, 0x4A]
+
+    def opf(ct):
+        return P8(ct & opm)
+
+    for i in range(5):
+        def ipf(pt):
+            return sum(P8(pt & m) for m in ipms) >= i
+
+        corr128 = func_corr(ipf, opf)
+        print(i, corr128)
+
+
+
+def parity_trail():
+    opm = 0x01
+
+    def opf(ct):
+        return P8(ct & opm)
+
+    best, info = 0, None
+    for ipms in combinations(range(1, 256), 2):
+        def ipf(pt):
+            return sum(P8(pt & ipm) for ipm in ipms) & 0x01
+        corr128 = func_corr(ipf, opf)
+        if abs(corr128) > abs(best):
+            best = corr128
+            info = ipms
+        print(ipms, corr128)
+    print(best, info)
+
+if __name__ == "__main__":
+    # parity_trail()
+    # MM4()
+
+    # opm = 0x01
+    # ipmss = [f for f in core_input_masks_v2(opm)]
+    # for ipms in ipmss:
+    #     masks = xor_closure(ipms)
+    #     masks.remove(0)
+    #     print(masks, len(masks))
+    #     ipf = majority_func_for_masks(masks)
+    #     def opf(ct):
+    #         return P8(ct & opm)
+    #     for key in GF2_8:
+    #         print(keyed_func_corr(ipf, opf, ipk=key, opk=0))
+
+    # opm = 0x01
+    # ipms = [0xA3, 0x2D, 0xC4]
+
+    # ipk = 0x9A
+    # opk = 0x53
+    # res = {}
+    # for pt in GF2_8:
+    #     ct = opk ^ subbyte(ipk ^ pt)
+
+    #     oth = (P8(ipms[0] & (pt ^ ipk)) & P8((ipms[1] ^ ipms[2]) & (pt ^ ipk))) ^ ((P8(ipms[1] & (pt ^ ipk)) & P8(ipms[2] & (pt ^ ipk))))
+    #     maj = int(sum(P8((pt ^ ipk) & ipm) for ipm in ipms) >= 2)
+    #     # majk = sum(P8(ipk & ipm) for ipm in ipms) >= 2
+
+    #     lp = maj
+    #     rp = oth
+
+    #     idx = f"{lp}{rp}"
+    #     res.setdefault(idx, 0)
+    #     res[idx] += 1
+    # print(res)
+
+    # import random
+
+    # grid = [[random.randint(0, 0xFF) for _ in range(4)] for _ in range(4)]
+
+    # ggrid = [[subbyte(x) for x in y] for y in grid]
+
+    # for g in grid:
+    #     print(" & ".join(["\hex{" + f"{r:02X}" + "}" for r in g]))
+    # print()
+    # for g in ggrid:
+    #     print(" & ".join(["\hex{" + f"{r:02X}" + "}" for r in g]))
+
+    key = 0x7bb63927
+    key_guess = 0x48e9b8b0
+    random_key = 0xd05df7a6
+    inv = 0x335f8197
+
+    oopm = 0x2D000000
+    opm = find_input_mask(oopm)
+    opms = split32(opm)
+    for i, v in enumerate(zip(opms, split32(key), split32(key_guess), split32(random_key), split32(inv))):
+        opm, k, kg, rkg, i = v
+        ipms = next(core_input_masks(opm))
+        zkc = orthogonal_class(ipms)
+        for ipm in ipms:
+            print(f'opm: {hex(opm)}, ipm: {hex(ipm)}, k: {hex(k)}, kg: {hex(kg)}, rkg: {hex(rkg)}, i: {hex(i)}')
+            kp = [P8(ipm & (k ^ z)) for z in GF2_8]
+            kgp = [P8(ipm & (kg ^ z)) for z in GF2_8]
+            rkgp = [P8(ipm & (rkg ^ z)) for z in GF2_8]
+            print("kp, kgp ", sum(i == j for i, j in zip(kp, kgp)))
+            print("kp, rkgp", sum(i == j for i, j in zip(kp, rkgp)))
+            print("kp, i   ", sum(i == j for i, j in zip(kp, ip)))
 
 
 
     sys.exit()
 
-    mmm = 0x01
-    assert 0x2D in MM5_input_masks(0x01)
-    opm1 = find_input_mask(0x2D000000)
-    opms = split32mask(opm1)
-    ipm = join32mask(*[ipm16(opm) for opm in opms])
+    masks = [
+        0x5209DC81,
+        0xABFADFC9,
+        0x9165091E,
+        0x25B83709,
+    ]
 
-    print(f"mask befor round 1: 0x{ipm:08X}")
-    print(f"mask after sbox round 1: 0x{opm1:08X}")
-    print(f"mask after round 1: 0x{0x2D000000:08X}")
+    reverse = transpose([list(split32(m)) for m in masks])
+    print([[hex(x) for x in r] for r in reverse])
+    reverse = [join32(*x) for x in reverse]
+    print([hex(r) for r in reverse])
 
-    opm = find_output_mask(0x01)
-    print(f"mask after round 2: 0x{opm:08X}")
+    mixed = [find_input_mask(x) for x in reverse]
+    print([hex(r) for r in mixed])
+    reverse = transpose([list(split32(m)) for m in mixed])
+    print([[hex(x) for x in r] for r in reverse])
+    for g in reverse:
+        print(" & ".join(["\hex{" + f"{r:02X}" + "}" for r in g]))
 
-    ipm = opm
-    opm = join32mask(*[opm16(ipm) for ipm in split32mask(ipm)])
-    print(f"mask after sbox in round 3: 0x{opm:08X}")
+    sys.exit()
 
-    ipms = split32mask(opm)
-    for i, ipm in enumerate(ipms):
-        print(f"{i}th mask after round 3: 0x{find_output_mask(ipm << (8 * ( 3-i ))):08X}")
-    pass
+
+    opm = 0x2D
+    print(MM5_input_masks(opm))
+    m2, m3, m4, m1, m5 = MM5_input_masks(opm)
+
+    print(m1, m2, m3, m1 ^ m2, m1 ^ m3)
+    for m in (m1, m2, m3, m4, m5):
+        print(f"0x{m:02X}")
+
+    print(corr(0x93, 0x2D))
+    print(corr(0x1A, 0x2D))
+    print(corr(0x3A, 0x2D))
+    print(corr(0x89, 0x2D))
+    print(corr(0xA9, 0x2D))
+
+    sys.exit()
+
+
+
+    eligible_keys_1 = [key for key in GF2_8 if P8(m1 & key) == 0 and P8(m2 & key) == 1 and P8(m3 & key) == 0]
+    eligible_keys_2 = [key for key in GF2_8 if P8(m1 & key) == 1 and P8(m2 & key) == 0 and P8(m3 & key) == 1]
+
+    key1 = eligible_keys_1[0]
+    key2 = eligible_keys_2[0]
+
+    ipms = [m1, m2, m3, m1^m2, m1^m3]
+
+    def opf(ct):
+        return P8(ct & opm)
+
+    for key1 in eligible_keys_1:
+        def ipf(pt):
+            return sum(I(P8((pt ^ key1) & ipm)) for ipm in ipms) < 0
+
+
+        print(keyed_func_corr(ipf, opf, ipk=key2, opk=0))
+
+
+
+    
+
+
+
+
+    # # MM2()
+    # oopm = 0x01
+    # iipms = next(core_input_masks(oopm))
+    # for iipm in iipms:
+    #     print(f"IIPM: 0b{iipm:08b} = 0x{iipm:02X}:")
+    #     opm = find_input_mask(iipm << 24)
+    #     opms = split32(opm)
+    #     for opm in opms:
+    #         print(f"    OPM: 0b{opm:08b} = 0x{opm:02X}: ")
+    #         for ipms in core_input_masks(opm):
+    #             print("       ", [f"0b{ipm:08b} = 0x{ipm:02X}" for ipm in ipms])

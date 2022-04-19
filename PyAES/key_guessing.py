@@ -3,11 +3,13 @@ Library that assists in computing which key guesses give the best
 correlation
 """
 
+import json
 import numpy as np
 from typing import List
 from correlation import corr, func_corr, keyed_func_corr, ocorr
-from toolbox import GF2_8, P8, signum, subbyte
+from toolbox import GF2_8, I, J, P8, signum, subbyte
 from SetCoverPy import setcover
+from mmm import MM5_input_masks, input_func_for_MM5
 
 
 def get_32_mapping(opm: int, key: int) -> List[bool]:
@@ -47,6 +49,30 @@ def get_key_guesses(opm: int) -> List[int]:
     g.SolveSCP()
 
     return list(map(lambda elt: elt[0], filter(lambda elt: elt[1], enumerate(g.s))))
+
+def get_key_guess(opm: int, key: int) -> List[int]:
+    """
+    Get key guess that gives 2^-2 correlation for opm `opm` when actual key is `key`.
+    """
+
+    with open("key_guess_mapping_v4.json") as fp:
+        data = json.load(fp)
+    all_guesses = data[f"{opm:02X}"]
+
+    guesses = [x[0] for x in all_guesses]
+
+    def opf(ct):
+        return P8(ct & opm)
+
+    masks = MM5_input_masks(opm)
+    for guess in guesses:
+
+        def ipf(pt):
+            return J(signum(sum(I(P8((pt ^ guess) & ipm)) for ipm in masks)))
+
+        corr128 = keyed_func_corr(ipf, opf, ipk=key, opk=0)
+        if abs(corr128) == 32:
+            return guess
 
 
 def test_correlation_for_opm_and_key(opm, key, guesses):

@@ -2,11 +2,13 @@
 #include <random>
 #include <algorithm>
 
+uint16_t ENCROUNDS = 2;
 uint8_t OPM = 0x01;
 uint32_t IPMS[3] = {
     0x62799393,
     0x25648989,
     0x3CAAA9A9};
+uint32_t KEYOFFSETS = 0x335f8197;
 
 inline uint16_t sboxInputParity(uint8_t pt, uint8_t *ipms)
 {
@@ -90,22 +92,29 @@ void printSettings(uint64_t sampleSize, uint16_t encRounds)
     for (uint16_t p = 0; p < 3; p++)
     {
         std::cout << "\"0x" << std::hex << (IPMS[p]) << std::dec << "\"";
-        if (p < 2) std::cout << ",";
+        if (p < 2)
+            std::cout << ",";
         std::cout << "\n";
     }
     std::cout << "],\n";
+    std::cout << "\"keyoffsets\": \"0x" << std::hex << KEYOFFSETS << std::dec << "\",\n";
 }
 
-void printResults(uint32_t *keyguesses, uint16_t nrKeyGuesses, uint64_t *counters)
+void printResults(uint32_t *key, uint32_t *keyguesses, uint16_t nrKeyGuesses, uint64_t *counters)
 {
     std::cout << "{\n";
-    std::cout << "\"key\": \"0x" << std::hex << keyguesses[0] << "\",\n";
-    std::cout << "\"counts\":{\n";
+    std::cout << "\"key\": [\n";
+    for (uint16_t j = 0; j < 4; j++)
+    {
+        std::cout << "0x" << std::hex << key[j] << "\",\n";
+    }
+    std::cout << "],\n\"counts\":{\n";
     for (uint16_t j = 0; j < nrKeyGuesses; j++)
     {
         std::cout << "\"0x" << std::hex << keyguesses[j] << "\": "
                   << std::dec << counters[j];
-        if (j < nrKeyGuesses - 1) std::cout << ",";
+        if (j < nrKeyGuesses - 1)
+            std::cout << ",";
         std::cout << "\n";
     }
     std::cout << "}}";
@@ -114,21 +123,18 @@ void printResults(uint32_t *keyguesses, uint16_t nrKeyGuesses, uint64_t *counter
 void monteCarlo()
 {
     // Settings
-    uint64_t sampleSize = 0x10000000;
-    uint16_t trailRounds = 20;
-    uint16_t encRounds = 2;
+    uint64_t sampleSize = 0x010000000;
+    uint16_t trailRounds = 0x80;
     uint16_t nrKeyGuesses = 17; // of which the first is with the correct key
 
     // Variables
     uint32_t key[4];
-    uint32_t expandedKey[4 * (encRounds + 1)];
+    uint32_t expandedKey[4 * (ENCROUNDS + 1)];
     uint32_t keyguesses[nrKeyGuesses];
     uint64_t counters[nrKeyGuesses];
-    double corr;
-    double corrlog[nrKeyGuesses];
 
     // Execute test `trailRounds` times
-    printSettings(sampleSize, encRounds);
+    printSettings(sampleSize, ENCROUNDS);
     std::cout << "\"trails\":[\n";
     for (uint16_t r = 0; r < trailRounds; r++)
     {
@@ -137,15 +143,18 @@ void monteCarlo()
         {
             key[i] = rand_uint32();
         }
-        ExpandKey(key, expandedKey, encRounds + 1);
+        ExpandKey(key, expandedKey, ENCROUNDS + 1);
 
         // Generate key guesses
-        // Set first key equal to correct key
+        // Set first key guess equal to correct key
         keyguesses[0] = 0;
         for (uint16_t i = 0; i < 4; i++)
         {
             keyguesses[0] ^= key[i] & (0xFF << (8 * (3 - i)));
         }
+        // Alter key to another key in the same key class.
+        keyguesses[0] ^= KEYOFFSETS;
+
         // Choose other keys at random
         for (uint16_t i = 1; i < nrKeyGuesses; i++)
         {
@@ -159,8 +168,9 @@ void monteCarlo()
         computeParities(counters, nrKeyGuesses, keyguesses, expandedKey, sampleSize);
 
         // Print results
-        printResults(keyguesses, nrKeyGuesses, counters);
-        if (r < trailRounds - 1) std::cout << ",";
+        printResults(key, keyguesses, nrKeyGuesses, counters);
+        if (r < trailRounds - 1)
+            std::cout << ",";
         std::cout << "\n";
     }
     std::cout << "]\n";

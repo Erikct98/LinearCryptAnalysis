@@ -6,7 +6,7 @@ Multiple Mask Method.
 from itertools import combinations, product
 from typing import Callable, Iterable, List, Tuple
 from correlation import func_corr, ipms_with_abs_corr, opms_with_abs_corr
-from toolbox import P8, GF2_8_min_0
+from toolbox import P8, GF2_8_min_0, xorsum
 
 
 def MM5_input_masks(opm: int) -> List[int]:
@@ -29,7 +29,7 @@ def MM5_output_masks(ipm: int) -> List[int]:
 
 def core_input_masks(opm: int) -> Iterable[Tuple[int, int, int]]:
     """
-    Yields all trio's of input masks that can be used to create
+    Yields two trio's of input masks that can be used to create
     the 5 input masks for this `opm`.
     :returns: a tuple with the "leader" in first position.
     """
@@ -55,6 +55,19 @@ def core_input_masks(opm: int) -> Iterable[Tuple[int, int, int]]:
 
     for elt1, elt2 in product(set1, set2):
         yield (leader, elt1, elt2)
+
+
+def core_input_masks_v2(opm: int) -> Iterable[Tuple[int, int, int]]:
+    """
+    Yields all trio's of input masks that can be used to create
+    the 5 input masks for this `opm`.
+    """
+    assert 0 < opm < 256
+
+    m5 = MM5_input_masks(opm)
+    for masks in combinations(m5, 3):
+        if xorsum(masks) != 0:
+            yield tuple(sorted(masks))
 
 
 def majority_func_for_masks(masks: List[int]) -> Callable[[int], int]:

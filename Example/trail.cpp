@@ -19,10 +19,17 @@ static const uint32_t OPM[4] = {
     0x00000A07,
     0x000000CB};
 static uint32_t CONSTANTS[4] = {
-    0x47AEB5C6,
-    0xE6BA6404,
-    0x01E1A321,
-    0x4E9CED5D};
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000
+};
+// static uint32_t CONSTANTS[4] = {
+//     0x47AEB5C6,
+//     0xE6BA6404,
+//     0x01E1A321,
+//     0x4E9CED5D
+// };
 
 // Randomization
 std::mt19937 mt(time(0));
@@ -33,21 +40,16 @@ uint32_t count(uint32_t *key, uint32_t *constants, uint32_t sample_size)
 {
     uint32_t word[4];
     uint32_t count = sample_size;
-    uint8_t parity;
+    uint32_t val;
 
     for (uint32_t i = 0; i < sample_size; i++)
     {
         // Generate random input
+        val = 0;
         for (uint8_t i = 0; i < 4; i++)
         {
             word[i] = randint(mt);
-        }
-
-        // Compute parity input
-        parity = 0;
-        for (uint8_t i = 0; i < 4; i++)
-        {
-            parity ^= P32(word[i] & IPM[i]);
+            val ^= word[i] & IPM[i];
         }
 
         // Encrypt
@@ -56,7 +58,7 @@ uint32_t count(uint32_t *key, uint32_t *constants, uint32_t sample_size)
         // XOR parity output
         for (uint8_t i = 0; i < 4; i++)
         {
-            parity ^= P32(word[i] & OPM[i]);
+            val ^= word[i] & OPM[i];
         }
 
         // Analyse
@@ -81,16 +83,17 @@ void writeToFile(uint32_t *results, uint32_t nr_trials, std::string fname)
 
 int main()
 {
-    uint32_t key[4];
+    uint32_t key[4] = {0};
     uint32_t counts[NR_ITERATIONS];
     for (uint8_t i = 0; i < NR_ITERATIONS; i++)
     {
+        counts[i] = count(key, CONSTANTS, SAMPLE_SIZE);
+        std::cout << counts[i] << std::endl;
+
         for (uint8_t j = 0; j < 4; j++)
         {
             key[j] = randint(mt);
         }
-
-        counts[i] = count(key, CONSTANTS, SAMPLE_SIZE);
     }
 
     writeToFile(counts, NR_ITERATIONS, "results/trail_results.dat");

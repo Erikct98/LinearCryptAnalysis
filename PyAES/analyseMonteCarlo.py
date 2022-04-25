@@ -4,11 +4,11 @@ Analyses the results from the MonteCarlo tests.
 
 import json
 import math
-from correlation import keyed_func_corr
-from toolbox import GF2_8, I, join32, split32, P8
-from mixcolumn_trail_search import find_input_mask
+from core.correlation import keyed_func_corr
+from core.toolbox import I, join32, split32, P8
+from core.mmm import MM5_input_masks, core_input_masks_v2
+from core.mixcolumn_trail_search import find_input_mask
 from typing import Dict, List
-from mmm import MM5_input_masks, core_input_masks_v2
 
 FNAME = "../AES/montecarloresults6.json"
 

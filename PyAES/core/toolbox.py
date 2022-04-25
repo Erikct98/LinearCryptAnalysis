@@ -2,11 +2,13 @@
 This library provides a host of small functions that
 are useful in many situations.
 """
-from itertools import chain, combinations
 import random
+from itertools import chain, combinations
 from typing import Any, List, Tuple
 
 Table = List[List[Any]]
+
+Corr128 = int
 
 GF2_8 = range(256)  # F_2^8
 GF2_8_min_0 = range(1, 256)  # F_2^8 \ {0}
@@ -205,3 +207,6 @@ def join32(*words: int) -> int:
     Join 4 8-bit words into a 32-bit word.
     """
     return xorsum([w << (24 - 8 * i) for i, w in enumerate(words)])
+
+def hex_(x: int, width=2):
+    return "0x" + str.rjust(f"{x:X}", width, "0")

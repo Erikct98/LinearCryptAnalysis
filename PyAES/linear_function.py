@@ -1,5 +1,5 @@
 from typing import Dict, Callable
-from toolbox import I, P8
+from core.toolbox import I, P8
 
 
 class LinearFunction:

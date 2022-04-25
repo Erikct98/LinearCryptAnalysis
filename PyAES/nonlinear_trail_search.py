@@ -8,8 +8,8 @@ The trail (pt3 | pt7) ^ (pt5 | pt1) == ct7 ^ ct3 ^ ct1 holds with correlation 0.
 Observe here the use of non-linear OR function (|)
 """
 
-from toolbox import GF2_8
-from LAT import LAT
+from core.toolbox import GF2_8
+from core.LAT import LAT
 
 def find_4_term_non_linear(opm):
     """

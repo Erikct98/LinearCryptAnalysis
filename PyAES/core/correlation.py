@@ -3,9 +3,9 @@ This library assists in working with the Linear Approximation Table
 of the AES sbox.
 """
 
+from core.toolbox import GF2_8, Corr128, subbyte
+from core.LAT import LAT
 from typing import Callable, List
-from toolbox import GF2_8, subbyte
-from LAT import LAT
 
 
 def corr(ipm: int, opm: int) -> int:
@@ -53,7 +53,8 @@ def ipm16(opm: int) -> int:
     Returns an input mask that achieves +/- 2^-3 correlation over AES sbox
     with output mask `opm`.
     """
-    if opm == 0: return 0
+    if opm == 0:
+        return 0
     return ipms_with_abs_corr(opm, 16)[0]
 
 
@@ -62,11 +63,12 @@ def opm16(ipm: int) -> int:
     Returns an output mask that achieves +/- 2^-3 correlation over AES sbox
     with input mask `ipm`.
     """
-    if ipm == 0: return 0
+    if ipm == 0:
+        return 0
     return opms_with_abs_corr(ipm, 16)[0]
 
 
-def func_corr(ipf: Callable, opf: Callable) -> int:
+def func_corr(ipf: Callable, opf: Callable) -> Corr128:
     """
     Computes the correlation between input function `ipf` and
     output function `opf` over the AES sbox.
@@ -79,7 +81,7 @@ def func_corr(ipf: Callable, opf: Callable) -> int:
     return count
 
 
-def keyed_func_corr(ipf: Callable, opf: Callable, ipk: int, opk: int) -> List[int]:
+def keyed_func_corr(ipf: Callable, opf: Callable, ipk: int, opk: int) -> Corr128:
     """
     Return correlation between input function `ipf` and output function `opf`
     through `ipk`-XOR, SubBytes and `opk`-XOR.

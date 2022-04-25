@@ -1,3 +1,4 @@
+from core.toolbox import Corr128
 from collections import Counter
 from typing import Dict, List
 import math
@@ -17,7 +18,7 @@ def subsetsum(nr_items, sum):
     yield from subsetsum_(nr_items, sum, [])
 
 
-def expected_information(nr_sboxes: int, weights_exps: Dict[int, int]):
+def expected_information(nr_sboxes: int, weights_exps: Dict[Corr128, int]):
     """
     Returns the expected amount of information (in bits).
     :param nr_sboxes: number of sboxes in play.
@@ -57,4 +58,11 @@ def expected_information(nr_sboxes: int, weights_exps: Dict[int, int]):
 
 
 if __name__ == "__main__":
+    weights_exps = {
+        0: -3,
+        8: -2,
+        12: -1,
+        32: -3
+    }
+    print(expected_information(20, weights_exps))
     pass

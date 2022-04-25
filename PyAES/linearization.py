@@ -1,7 +1,10 @@
+"""
+Library focussed on Equation 12.
+"""
 from linear_function import LinearFunction
-from LAT import LAT
-from toolbox import GF2_8, J, P8, I
-from correlation import func_corr, keyed_func_corr
+from core.LAT import LAT
+from core.toolbox import GF2_8, P8, I
+from core.correlation import func_corr, keyed_func_corr
 
 
 def keyed_linearization_for_ipm(ipm: int, ipkey: int = 0) -> LinearFunction:

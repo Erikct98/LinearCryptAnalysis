@@ -2,11 +2,11 @@
 This library provides tools that are useful in trailing through AES in case
 of non-zero keys and extracting keybits in the process.
 """
-from correlation import keyed_func_corr
+from core.correlation import keyed_func_corr
+from core.toolbox import I, J, P8, GF2_8, bit_count
+from core.LAT import LAT
 from linearization import keyed_linearization_for_ipm
-from toolbox import I, J, P8, GF2_8, bit_count
 from collections import Counter
-from LAT import LAT
 
 
 def compute_correlations_wo_key(key_guess):

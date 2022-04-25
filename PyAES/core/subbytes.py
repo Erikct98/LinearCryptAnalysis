@@ -1,8 +1,8 @@
 """
 This library assists in working with the SubBytes step in the AES algorithm.
 """
+from core.toolbox import P8, GF2_8, cylesh8, Table
 from typing import List
-from toolbox import P8, GF2_8, cylesh8, Table
 
 
 def mulp(x: int, y: int) -> int:

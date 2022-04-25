@@ -1,4 +1,4 @@
-from toolbox import GF2_8, P8, I, F, subbyte
+from core.toolbox import GF2_8, P8, I, F, subbyte
 
 
 def find_optimal_signs():
@@ -93,3 +93,7 @@ def compute_correlation_v2():
         out_par = P8(subbyte(pt) & OPM)
         count -= in_par ^ out_par
     return (2 * (count / 256) - 1, count)
+
+
+if __name__ == "__main__":
+    pass

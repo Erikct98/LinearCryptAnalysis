@@ -3,9 +3,9 @@ Aids in the creation of a linear trail through AES.
 """
 
 from typing import List
-from mixcolumn_trail_search import find_input_mask, find_output_mask
-from toolbox import join32, split32
-from correlation import ipm16, opm16
+from core.mixcolumn_trail_search import find_input_mask, find_output_mask
+from core.toolbox import join32, split32
+from core.correlation import ipm16, opm16
 
 
 def print_mask(mask: List[int]) -> None:

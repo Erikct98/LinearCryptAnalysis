@@ -3,10 +3,10 @@ Library used to compute information surrounding the
 Multiple Mask Method.
 """
 
+from core.correlation import func_corr, ipms_with_abs_corr, opms_with_abs_corr
+from core.toolbox import P8, GF2_8_min_0, xorsum
 from itertools import combinations, product
 from typing import Callable, Iterable, List, Tuple
-from correlation import func_corr, ipms_with_abs_corr, opms_with_abs_corr
-from toolbox import P8, GF2_8_min_0, xorsum
 
 
 def MM5_input_masks(opm: int) -> List[int]:

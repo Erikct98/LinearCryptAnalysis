@@ -3,13 +3,13 @@ Library that assists in computing which key guesses give the best
 correlation
 """
 
+from core.correlation import keyed_func_corr, ocorr
+from core.toolbox import GF2_8, I, J, P8, signum, subbyte
+from core.mmm import MM5_input_masks
 import json
 import numpy as np
 from typing import List
-from correlation import corr, func_corr, keyed_func_corr, ocorr
-from toolbox import GF2_8, I, J, P8, signum, subbyte
 from SetCoverPy import setcover
-from mmm import MM5_input_masks, input_func_for_MM5
 
 
 def get_32_mapping(opm: int, key: int) -> List[bool]:

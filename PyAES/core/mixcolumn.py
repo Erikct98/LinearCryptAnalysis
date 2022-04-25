@@ -2,7 +2,7 @@
 This library contains tools used in the MixColumn step of the AES encryption scheme.
 """
 
-from subbytes import mulp
+from core.subbytes import mulp
 
 
 def mixcolumn(x: int) -> int:

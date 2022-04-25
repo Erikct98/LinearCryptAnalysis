@@ -1,8 +1,7 @@
-from correlation import corr, func_corr
-from toolbox import GF2_8, P8
+from core.correlation import corr, func_corr
+from core.toolbox import GF2_8, P8
 import random
 from linear_function import LinearFunction
-from itertools import combinations, chain
 
 
 def get_ipm_mapping(ipm: int):

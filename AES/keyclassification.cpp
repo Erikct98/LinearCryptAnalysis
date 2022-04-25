@@ -220,6 +220,26 @@ void classify_5mm()
     uint64_t sample_size = 0x100000000;
     // uint64_t sample_size = 0x004000000;
 
+    // Keys
+    uint32_t key[4] = {
+        0x0659AE2C,
+        0x1CAD320E,
+        0xF2364DEB,
+        0xFE1DCB72
+    };
+    // round1 06 / AD / 4D / 72
+    // round2 A3
+    uint32_t expandedkey[8];
+    ExpandKey(key, expandedkey, 2);
+
+    // Key guesses
+    uint8_t kg_r1_b0 = 0x02;
+    uint8_t kg_r1_b1 = 0x0A;
+    uint8_t kg_r1_b2 = 0x07;
+    uint8_t kg_r1_b3 = 0x12;
+    uint8_t kg_r2_b0 = 0x00;
+
+    // Parity
     uint32_t pt[4], pt0, pt1, pt2, pt3;
     uint32_t ipp_2D, ipp_67, ipp_8E, ipp_A3, ipp_C4, maj_01;
     uint32_t opp_2D, opp_67, opp_8E, opp_A3, opp_C4, opp_01;
@@ -250,10 +270,10 @@ void classify_5mm()
         pt[3] = (i & 0x000000FF) ^ (pt[3] & 0xFFFFFF00);
 
         // Analyse plaintext
-        pt0 = (pt[0] >> 24) & 0xFF;
-        pt1 = (pt[1] >> 16) & 0xFF;
-        pt2 = (pt[2] >>  8) & 0xFF;
-        pt3 = (pt[3] >>  0) & 0xFF;
+        pt0 = ((pt[0] >> 24) & 0xFF) ^ kg_r1_b0;
+        pt1 = ((pt[1] >> 16) & 0xFF) ^ kg_r1_b1;
+        pt2 = ((pt[2] >>  8) & 0xFF) ^ kg_r1_b2;
+        pt3 = ((pt[3] >>  0) & 0xFF) ^ kg_r1_b3;
         ipp_2D = tb5(pt0, 0x16) ^ tb5(pt1, 0x3B) ^ tb5(pt2, 0x2D) ^ tb5(pt3, 0x2D); // ipms for 2D
         ipp_67 = tb5(pt0, 0x33) ^ tb5(pt1, 0x54) ^ tb5(pt2, 0x67) ^ tb5(pt3, 0x67); // ipms for 67
         ipp_8E = tb5(pt0, 0x47) ^ tb5(pt1, 0xC9) ^ tb5(pt2, 0x8E) ^ tb5(pt3, 0x8E); // ipms for 8E
@@ -261,6 +281,7 @@ void classify_5mm()
         ipp_C4 = tb5(pt0, 0x62) ^ tb5(pt1, 0xA6) ^ tb5(pt2, 0xC4) ^ tb5(pt3, 0xC4); // ipms for C4
 
         // Encrypt one round
+        AddRoundKey(pt, expandedkey, 0);
         SubBytes(pt);
         ShiftRows(pt);
         MixColumns(pt);
@@ -273,8 +294,9 @@ void classify_5mm()
         opp_C4 = P8((pt[0] >> 24) & 0xC4);
 
         // Encrypt additional round
+        AddRoundKey(pt, expandedkey, 1);
         SubBytes(pt);
-        opp_01 = P8((pt[0] >> 24) & 0x01);
+        opp_01 = P8(((pt[0] >> 24) ^ kg_r2_b0)& 0x01);
 
         // Compute majority vote
         maj_01 = (ipp_2D + ipp_67 + (1^ipp_8E) + (1^ipp_A3) + (1^ipp_C4)) >= 3;

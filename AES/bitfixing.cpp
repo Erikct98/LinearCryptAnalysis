@@ -7,7 +7,7 @@
 void bitfixing()
 {
     // Settings
-    const uint32_t sample_size = 0x80000000;
+    const uint32_t sample_size = 0x40000000;
     uint32_t key[4] = {
         0xC4298E25,
         0x2DB74D07,
@@ -27,18 +27,13 @@ void bitfixing()
     uint32_t pt[4], ppt[4];
     uint32_t ipp, opp;
 
-    // Randomly init random plaintext
-    for (uint16_t j = 0; j < 4; j++)
-    {
-        ppt[j] = rand_uint32();
-    }
 
     for (uint32_t i = 0; i < sample_size; i++)
     {
         // Choose random plaintext
         for (uint16_t j = 0; j < 4; j++)
         {
-            ppt[j] += (j + 1) * 0x1924216891;
+            ppt[j] = rand_uint32();
         }
 
         // Fix grey parts

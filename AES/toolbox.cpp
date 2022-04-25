@@ -179,7 +179,7 @@ void printResults(uint64_t *counts, uint16_t count_len, uint64_t total)
     }
     std::cout << std::endl;
 
-    uint64_t total_count = std::accumulate(counts, counts + count_len, 0);
+    uint64_t total_count = std::accumulate(&counts[0], &counts[count_len-1], 0x0000000000000000);
     float corr = 2 * (total_count / (float)total) - 1;
     float corrlog = std::log2(std::abs(corr));
     std::cout << "corr = 2 * (" << total_count << "/" << total

@@ -14,10 +14,12 @@ OBJTOOLBOX			= toolbox.o
 OBJKEYRECVR			= keyrecovery.o
 OBJKEYRECVR2		= keyrecovery2.o
 OBJKEYRECVR3		= keyrecovery3.o
+OBJKEYRECVR4		= keyrecovery4.o
 OBJBLINDTRAIL		= blindtrail.o
 OBJKEYGUESSFINDER	= keyguessfinder.o
 OBJKEYCLASSIS		= keyclassis.o
 OBJMONTECARLO		= montecarlo.o
+OBJMONTECARLOV2		= montecarlov2.o
 OBJDUALTRAIL		= dualtrail.o
 
 EXEBITFIX			= bitfix.exe
@@ -30,10 +32,12 @@ EXETRAILTHREE		= trailthree.exe
 EXEKEYRECVR			= keyrecovery.exe
 EXEKEYRECVR2		= keyrecovery2.exe
 EXEKEYRECVR3		= keyrecovery3.exe
+EXEKEYRECVR4		= keyrecovery4.exe
 EXEBLINDTRAIL		= blindtrail.exe
 EXEKEYGUESSFINDER	= keyguessfinder.exe
 EXEKEYCLASSIS		= keyclassis.exe
 EXEMONTECARLO		= montecarlo.exe
+EXEMONTECARLOV2		= montecarlov2.exe
 EXEDUALTRAIL		= dualtrail.exe
 
 _aes:
@@ -82,6 +86,10 @@ keyrecovery3: _toolbox _aes
 	${CC} -c -o ${OBJKEYRECVR3} keyrecoveryv3.cpp ${CFLAGS}
 	${CC} -o ${EXEKEYRECVR3} ${OBJKEYRECVR3} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
 
+keyrecovery4: _toolbox _aes
+	${CC} -c -o ${OBJKEYRECVR4} keyrecoveryv4.cpp ${CFLAGS}
+	${CC} -o ${EXEKEYRECVR4} ${OBJKEYRECVR4} ${OBJAES} ${OBJTOOLBOX} ${CFLAGS}
+
 blindtrail: _toolbox
 	${CC} -c -o ${OBJBLINDTRAIL} blindtrail.cpp ${CFLAGS}
 	${CC} -o ${EXEBLINDTRAIL} ${OBJBLINDTRAIL} ${OBJTOOLBOX} ${CFLAGS}
@@ -97,6 +105,10 @@ keyclassis: _toolbox
 montecarlo: _toolbox
 	${CC} -c -o ${OBJMONTECARLO} montecarlo.cpp ${CFLAGS}
 	${CC} -o ${EXEMONTECARLO} ${OBJMONTECARLO} ${OBJTOOLBOX} ${CFLAGS}
+
+montecarlov2: _toolbox _aes
+	${CC} -c -o ${OBJMONTECARLOV2} montecarlov2.cpp ${CFLAGS}
+	${CC} -o ${EXEMONTECARLOV2} ${OBJMONTECARLOV2} ${OBJTOOLBOX} ${OBJAES} ${CFLAGS}
 
 dualtrail: _toolbox
 	${CC} -c -o ${OBJDUALTRAIL} dualtrail.cpp ${CFLAGS}
@@ -114,6 +126,7 @@ clean:
 	${OBJKEYRECVR} ${EXEKEYRECVR} \
 	${OBJKEYRECVR2} ${EXEKEYRECVR2} \
 	${OBJKEYRECVR3} ${EXEKEYRECVR3} \
+	${OBJKEYRECVR4} ${EXEKEYRECVR4} \
 	${OBJBLINDTRAIL} ${EXEBLINDTRAIL} \
 	${OBJKEYGUESSFINDER} ${EXEKEYGUESSFINDER} \
 	${OBJKEYCLASSIS} ${EXEKEYCLASSIS} \

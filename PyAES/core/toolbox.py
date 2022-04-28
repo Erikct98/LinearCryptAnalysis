@@ -208,5 +208,10 @@ def join32(*words: int) -> int:
     """
     return xorsum([w << (24 - 8 * i) for i, w in enumerate(words)])
 
+
 def hex_(x: int, width=2):
     return "0x" + str.rjust(f"{x:X}", width, "0")
+
+
+def bin_(x: int, width=8):
+    return "0b" + str.rjust(f"{x:b}", width, "0")

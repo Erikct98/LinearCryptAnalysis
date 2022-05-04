@@ -110,16 +110,16 @@ def guess_3bit_key(vectors: List[Tuple[int, int, int, int]]) -> Tuple[int, int, 
     """
     Guess three key bits based on the observed `vectors`.
     """
-    metric = manhattan(vectors)
-    print("==============")
-    for k,v in metric.items():
-        print(f"{k}: {v:.2f}")
+    # metric = manhattan(vectors)
+    # print("==============")
+    # for k,v in metric.items():
+    #     print(f"{k}: {v:.2f}")
+    # print("--------------")
     metric = gap(vectors)
-    print("--------------")
-    for k,v in metric.items():
-        print(f"{k}: {v:.2f}")
-    m = max(metric.items(), key=lambda x: x[1])
-    return m[0]
+    # for k,v in metric.items():
+    #     print(f"{k}: {v:.2f}")
+    m = min(metric.items(), key=lambda x: x[1])
+    return tuple(i ^ 1 for i in m[0])
 
 
 def linear_system_solving_esque(ss: int, exps):
@@ -175,4 +175,4 @@ def linear_system_solving_esque(ss: int, exps):
 
 
 if __name__ == "__main__":
-    linear_system_solving_esque(16, 128)
+    linear_system_solving_esque(16, 65536)

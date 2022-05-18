@@ -70,6 +70,36 @@ def core_input_masks_v2(opm: int) -> Iterable[Tuple[int, int, int]]:
             yield tuple(sorted(masks))
 
 
+def core_output_masks(ipm: int) -> Iterable[Tuple[int, int, int]]:
+    """
+    Yields two trio's of output masks that can be used to create
+    the 5 output masks for this `ipm`.
+    :returns: a tuple with the "leader" in first position.
+    """
+    assert 0 < ipm < 256
+
+    # Find the mask-triples that are linearly dependent.
+    sets: List[set] = []
+    m5 = MM5_output_masks(ipm)
+    for m1, m2, m3 in combinations(m5, 3):
+        if m1 ^ m2 ^ m3 == 0:
+            sets.append(set([m1, m2, m3]))
+
+    # Should be exactly two triples
+    assert len(sets) == 2
+    set1, set2 = sets
+
+    # Find element that is in both triples
+    intersection = set1.intersection(set2)
+    assert len(intersection) == 1
+    leader = intersection.pop()
+    set1.remove(leader)
+    set2.remove(leader)
+
+    for elt1, elt2 in product(set1, set2):
+        yield (leader, elt1, elt2)
+
+
 def majority_func_for_masks(masks: List[int]) -> Callable[[int], int]:
     def f(t: int) -> int:
         return sum(P8(t & m) for m in masks) >= (len(masks) + 1) / 2

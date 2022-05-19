@@ -21,6 +21,7 @@ OBJKEYCLASSIS		= keyclassis.o
 OBJMONTECARLO		= montecarlo.o
 OBJMONTECARLOV2		= montecarlov2.o
 OBJDUALTRAIL		= dualtrail.o
+OBJVECTORTRAIL		= vectortrail.o
 
 EXEBITFIX			= bitfix.exe
 EXEVALIDATE			= validate.exe
@@ -39,6 +40,7 @@ EXEKEYCLASSIS		= keyclassis.exe
 EXEMONTECARLO		= montecarlo.exe
 EXEMONTECARLOV2		= montecarlov2.exe
 EXEDUALTRAIL		= dualtrail.exe
+EXEVECTORTRAIL		= vectortrail.exe
 
 _aes:
 	${CC} -c -o ${OBJAES} aes128.cpp ${CFLAGS}
@@ -114,6 +116,10 @@ dualtrail: _toolbox
 	${CC} -c -o ${OBJDUALTRAIL} dualtrail.cpp ${CFLAGS}
 	${CC} -o ${EXEDUALTRAIL} ${OBJDUALTRAIL} ${OBJTOOLBOX} ${CFLAGS}
 
+vectortrail: _toolbox
+	${CC} -c -o ${OBJVECTORTRAIL} vectortrail.cpp ${CFLAGS}
+	${CC} -o ${EXEVECTORTRAIL} ${OBJVECTORTRAIL} ${OBJTOOLBOX} ${CFLAGS}
+
 clean:
 	rm -f ${OBJAES} ${OBJTOOLBOX} \
 	${OBJLINSBOX} ${EXELINSBOX} \
@@ -131,4 +137,5 @@ clean:
 	${OBJKEYGUESSFINDER} ${EXEKEYGUESSFINDER} \
 	${OBJKEYCLASSIS} ${EXEKEYCLASSIS} \
 	${OBJMONTECARLO} ${EXEMONTECARLO} \
-	${OBJDUALTRAIL} ${EXEDUALTRAIL}
+	${OBJDUALTRAIL} ${EXEDUALTRAIL} \
+	${OBJVECTORTRAIL} ${EXEVECTORTRAIL}

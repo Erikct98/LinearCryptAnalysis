@@ -131,5 +131,4 @@ void vectortrail()
 int main()
 {
     vectortrail();
-    // lineartrail();
 }
